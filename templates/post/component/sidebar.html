@@ -1,0 +1,86 @@
+{{if .IsLogin}}
+	{{if ne $.CategorySlug "home"}}
+	<div class="box">
+		<p>
+			<a class="btn btn-primary btn-sm" href="{{.AppUrl}}new?category={{$.CategorySlug}}"><span class="glyphicon glyphicon-plus"></span> {{i18n .Lang "post.post_new"}}</a>
+		</p>
+	</div>
+	{{end}}
+{{end}}
+
+{{if .NewComers}}
+<div class="box">
+	<div class="box-heading">{{i18n .Lang "sidebar.new_comers_notice"}}</div>
+	<div class="box-body">
+		<ul class="sidebar-list">
+			{{range .NewComers}}
+			<li><a href="{{.Url}}">{{.Name}}</a></li>
+			{{end}}
+		</ul>
+	</div>
+</div>
+{{end}}
+
+{{if .NewBestPosts}}
+<div class="box">
+	<div class="box-heading">{{i18n .Lang "post.post_new_best"}}</div>
+	<div class="box-body">
+		<ul class="sidebar-list">
+			{{range .NewBestPosts}}
+				<li><a href="{{.Link}}">{{.Title}}</a></li>
+			{{end}}
+		</ul>
+	</div>
+</div>
+{{end}}
+{{if .MostReplysPosts}}
+<div class="box">
+	<div class="box-heading">{{i18n .Lang "post.post_most_replys"}}</div>
+	<div class="box-body">
+		<ul class="sidebar-list">
+			{{range .MostReplysPosts}}
+				<li><a href="{{.Link}}">{{.Title}}</a></li>
+			{{end}}
+		</ul>
+	</div>
+</div>
+{{end}}
+
+{{if .MobileApps}}
+<div class="box">
+	<div class="box-heading">{{i18n .Lang "mobile_app"}}</div>
+	<div class="box-body">
+		<ul class="sidebar-list">
+			{{range .MobileApps}}
+			<li><a target="_blank" href="{{.Url}}">{{.Name}}</a></li>
+			{{end}}
+		</ul>
+	</div>
+</div>
+{{end}}
+
+{{if .OpenSources}}
+<div class="box">
+	<div class="box-heading">{{i18n .Lang "open_source"}}</div>
+	<div class="box-body">
+		<ul class="sidebar-list">
+			{{range .OpenSources}}
+			<li><a target="_blank" href="{{.Url}}">{{.Name}}</a></li>
+			{{end}}
+		</ul>
+	</div>
+</div>
+{{end}}
+
+{{if .FriendLinks}}
+<div class="box last">
+	<div class="box-heading">{{i18n .Lang "sidebar.frined_links"}}</div>
+	<div class="box-body">
+		<ul class="sidebar-list">
+			{{range .FriendLinks}}
+			<li><a target="_blank" href="{{.Url}}">{{.Name}}</a></li>
+			{{end}}
+		</ul>
+	</div>
+</div>
+{{end}}

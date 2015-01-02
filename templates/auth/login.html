@@ -1,0 +1,97 @@
+{{template "base/base.html" .}}
+{{template "base/base_common.html" .}}
+{{define "meta"}}<title>{{i18n .Lang "auth.login"}} - {{i18n .Lang "app_name"}}</title>{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content" class="col-md-8 col-md-offset-2">
+    	<div class="box">
+    		<div class="cell">
+                <div class="row">
+    				<div class="col-md-6 auth-page">
+    					<h3 class="title">
+    						<span class="glyphicon glyphicon-user"></span> {{i18n .Lang "auth.login"}}
+    					</h3>
+                        {{if .flash.ResetSuccess}}
+                        <div class="alert alert-success">
+                            <p>{{i18n .Lang "auth.forgot_reset_success"}}</p>
+                        </div>
+                        {{end}}
+                        {{if .flash.HasLogout}}
+                        <div class="alert alert-success">
+                            <p>{{i18n .Lang "auth.logout_success"}}</p>
+                        </div>
+                        {{end}}
+                        {{if .flash.NotPermit}}
+                        <div class="alert alert-danger">
+                            <p>{{i18n .Lang "auth.login_no_permit"}}</p>
+                        </div>
+                        {{end}}
+                        {{if .flash.UserForbid}}
+                        <div class="alert alert-danger">
+                            <p>{{i18n .Lang "auth.login_account_forbid"}}</p>
+                        </div>
+                        {{end}}
+                        {{if .Error}}
+                            <div class="alert alert-danger">
+                                {{if .ErrorReached}}
+                                    <p>{{i18n .Lang "auth.login_error_times_reached"}}</p>
+                                {{else}}
+                                    <p>{{i18n .Lang "auth.login_error"}}</p>
+                                {{end}}
+                            </div>
+                        {{end}}
+    					<form method="POST" action="{{.AppUrl}}login"{{if .Error}} class="has-error"{{end}}>
+                            {{.xsrf_html}}{{.once_html}}
+
+                            {{template "base/form/field_group.html" .LoginFormSets.Fields.UserName}}
+
+                            {{with .LoginFormSets.Fields.Password}}
+                            <div class="form-group{{if .Error}} has-error{{end}}">
+                                {{.Label}}
+                                
+                                {{call .Field}}
+                                {{if .Error}}<p class="error-block">{{.Error}}</p>{{end}}
+                                {{if .Help}}<p class="help-block">{{.Help}}</p>{{end}}
+                            </div>
+                            {{end}}
+
+                            {{template "base/form/field_group.html" .LoginFormSets.Fields.Remember}}
+
+				      		<button type="submit" class="btn btn-primary">{{i18n .Lang "auth.sign_in"}}&nbsp;&nbsp;<span class="glyphicon glyphicon-circle-arrow-right"></span></button>
+                            <a href="{{$.AppUrl}}forgot" class="pull-right"><span class="glyphicon glyphicon-question-sign"></span> {{i18n $.Lang "auth.forgot_password"}}</a>
+    					</form>
+    				</div>
+                    <!--
+                    <div class="col-md-4 auth-page">
+                        <div class="auth-page">
+                            <h3 class="title">
+                                <i class="icon icon-expand-alt"></i> {{i18n .Lang "auth.sign_with_social"}}
+                            </h3>
+                            <div class="auth-socials">
+                                <a href="{{.AppUrl}}login/google" class="icon-google-plus google"></a>
+                                <a href="{{.AppUrl}}login/github" class="icon-github github"></a>
+                                <a href="{{.AppUrl}}login/weibo" class="icon-weibo weibo"></a>
+                                <a href="{{.AppUrl}}login/qq" class="icon-qq-round qq"></a>
+                            </div>
+                        </div>
+                    </div>
+                     -->
+    				<div class="col-md-6 auth-page">
+        				<div class="auth-page">
+        					<h3 class="title">
+        						<span class="glyphicon glyphicon-question-sign"></span> {{i18n .Lang "help"}}
+        					</h3>
+        					<p class="well">
+        						{{i18n .Lang "auth.login_if_not_register"}}
+        					</p>
+        					<p>
+                            	<a href="{{.AppUrl}}register" class="btn btn-default">{{i18n .Lang "auth.register_now"}}&nbsp;&nbsp;<i class="icon-chevron-sign-right"></i></a>
+        					</p>
+	        			</div>
+    				</div>
+                </div>
+			</div>
+    	</div>
+	</div>
+</div>
+{{end}}

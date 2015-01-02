@@ -1,0 +1,39 @@
+{{template "base/base.html" .}}
+{{template "base/base_common.html" .}}
+{{define "meta"}}<title>{{.Page.GetTitle}} - {{i18n .Lang .AppName}}</title>{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content" class="col-md-8">
+        <div class="box post-show page-show">
+            <div class="cell first slim">
+                <h1 class="post-title">
+                    {{.Page.GetTitle}}
+                </h1>
+                <div class="post-meta">
+                    {{i18n .Lang "post.post_author"}} <a href="{{.Page.User.Link}}">{{.Page.User.NickName}}</a> • <span class="time">{{timesince .Lang .Page.Created}}</span>
+                </div>
+            </div>
+            <div class="cell last slim">
+                {{if ne (datetime .Page.Updated) (datetime .Page.Created)}}
+                    <p class="post-meta pull-right">
+                        {{i18n .Lang "post.modified_on"}} {{timesince .Lang .Page.Updated}} / {{.Page.Updated|datetimes}}
+                    </p>
+                {{end}}
+                {{if .User.IsAdmin}}
+                    <p>
+                        <a target="_blank" class="color-link" href="/admin/page/{{.Page.Id}}">{{i18n .Lang "post.page_edit"}} <i class="icon-edit"></i></a>
+                    </p>
+                {{end}}
+                <span class="clearfix"></span>
+                <div class="post-content markdown">
+                    {{str2html (.Page.GetContentCache)}}
+                </div>
+            </div>
+        </div>
+	</div>
+    <div id="sidebar" class="col-md-3">
+        <p>
+        </p>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,49 @@
+{{template "base/base.html" .}}
+{{template "base/base_common.html" .}}
+{{define "meta"}}
+    <title>{{i18n .Lang "notice.user_notice"}} - {{i18n .Lang "app_name"}}</title>
+    <meta name="description" content='{{i18n .Lang "notice.user_notice"}}' />
+{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content" class="col-md-9">
+    	<div class="box">
+            <ol class="breadcrumb">
+                <li><a href="{{.AppUrl}}"><span class="glyphicon glyphicon-home"></span></a></li>
+                <li><a href="{{.AppUrl}}notification">{{i18n .Lang "notice.user_notice"}}</a></li>
+            </ol>
+            {{if .paginator.Nums}}
+                <div class="notice-list">
+                    {{template "post/component/notice-list.html" dict "root" . "Notifications" .Notifications}}
+                    <div class="notice-pg">
+                    {{template "base/paginator_pn.html" .}}
+                    </div>
+                </div>
+            {{else}}
+                <div class="">
+                    <div class="text-center">{{i18n .Lang "notice.not_found_notice"}}</div>
+                </div>
+            {{end}}
+	   </div>
+    </div>
+    <div id="sidebar" class="col-md-3">
+       
+    </div>
+</div>
+{{end}}
+{{if .IsLogin}}
+<script type="text/javascript">
+    (function($){
+        $(document).on('click', '[rel=notice_clear]', function(){
+            var btn=$(this);
+            $.post('/api/notice/clear', {}).complete(function(data){
+                if(data.success){
+                    
+                }else{
+                    window.location.reload();
+                }    
+            });
+        });
+    })(jQuery);
+</script>
+{{end}}

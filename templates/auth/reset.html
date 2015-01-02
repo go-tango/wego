@@ -1,0 +1,56 @@
+{{template "base/base.html" .}}
+{{template "base/base_common.html" .}}
+{{define "meta"}}<title>{{i18n .Lang "auth.reset_password"}} - {{i18n .Lang "app_name"}}</title>{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content" class="col-md-8 col-md-offset-2">
+    	<div class="box">
+    		<div class="cell first breadcrumb">
+    			<a href="{{.AppUrl}}"><i class="ahead icon-home"></i></a><i class="divider icon-angle-right"></i>{{i18n .Lang "auth.reset_password"}}
+    		</div>
+    		<div class="cell last slim">
+    			<div class="row">
+                    {{if .Success}}
+                        <div class="col-md-6 auth-page">
+                            <h3 class="title">
+                                <i class="icon icon-user"></i> {{i18n .Lang "auth.reset_password"}}
+                            </h3>
+                            <form action="{{.AppUrl}}reset/{{.Code}}" method="POST">
+                                {{.xsrf_html}}{{.once_html}}
+
+                                {{template "base/form/fields.html" .ResetPwdFormSets}}
+
+                                <button class="btn btn-primary">{{i18n .Lang "save"}}&nbsp;&nbsp;<i class="icon-chevron-sign-right"></i></button>
+                            </form>
+                        </div>
+
+                        <div class="col-md-6 auth-page">
+                            <div class="auth-page">
+                                <h3 class="title">
+                                    <i class="icon icon-question"></i> {{i18n .Lang "help"}}
+                                </h3>
+                                <p class="well">
+                                    {{i18n .Lang "auth.reset_if_remember_sign_in"}}
+                                </p>
+                                <p>
+                                    <a href="{{.AppUrl}}login" class="btn btn-default">{{i18n .Lang "auth.login_now"}}&nbsp;&nbsp;<i class="icon-chevron-sign-right"></i></a>
+                                </p>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="col-md-12">
+                            <h3>{{i18n .Lang "auth.reset_failed"}}</h3>
+                            <hr>
+                            <p>
+                                {{i18n .Lang "auth.reset_failed_reason"}}
+                                <br><br>
+                                <a class="btn btn-default btn-danger" href="{{.AppUrl}}forgot">{{i18n .Lang "auth.reset_resend"}}</a>
+                            </p>
+                        </div>
+                    {{end}}
+    			</div>
+			</div>
+    	</div>
+	</div>
+</div>
+{{end}}

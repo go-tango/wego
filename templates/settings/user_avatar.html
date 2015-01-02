@@ -1,0 +1,85 @@
+{{template "base/base.html" .}}
+{{template "base/base_common.html" .}}
+{{define "meta"}}<title>{{i18n .Lang "auth.user_avatar"}} - {{i18n .Lang "app_name"}}</title>{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content">
+        <div class="col-md-3">
+            <div class="box">
+                <ul class="nav nav-side">
+                    <li class="cell first">
+                        <h4 class="head"><i class="icon icon-cogs"></i> {{i18n .Lang "auth.user_settings"}}</h4>
+                    </li>
+                    <li>
+                        <a href="{{.AppUrl}}settings/profile">{{i18n .Lang "auth.user_profile"}}</a>
+                    </li>
+                    <li class="active">
+                        <a href="{{.AppUrl}}settings/avatar">{{i18n .Lang "auth.user_avatar"}}</a>
+                    </li>
+                     <li>
+                        <a href="{{.AppUrl}}settings/change/password">{{i18n .Lang "auth.change_password"}}</a>
+                    </li>
+                    <li class="cell last">
+                    </li>
+                </ul>
+            </div>
+    	</div>
+        <div class="col-md-9">
+            <div class="box">
+                <ol class="breadcrumb">
+                    <li><a href="{{.AppUrl}}"><span class="glyphicon glyphicon-home"></a></li>
+                    <li><a href="">{{i18n .Lang "auth.user_avatar"}}</a></li>
+                </ol>
+                <div class="">
+                    {{if .flash.NeedActive}}
+                    <div class="alert alert-info">
+                        <h4>{{i18n .Lang "auth.need_active"}}</h4>
+                        {{i18n .Lang "auth.need_active_message"}}
+                    </div>
+                    {{else if .flash.AvatarSettingSave}}
+                    <div class="alert alert-success">
+                        {{i18n .Lang "auth.user_avatar_setting_changed"}}
+                    </div>
+                    {{else if .flash.AvatarUploadSuccess}}
+                    <div class="alert alert-success">
+                        {{i18n .Lang "auth.user_avatar_upload_success"}}
+                    </div>
+                    {{end}}
+                    <h3 class="underline">{{i18n .Lang "auth.user_avatar_setting"}}</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <form method="POST" action="{{.AppUrl}}settings/avatar">
+                                {{.xsrf_html}}{{.once_html}}
+
+                                {{template "base/form/fields.html" .UserAvatarFormSets}}
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">{{i18n .Lang "auth.user_avatar_save"}} <span class="glyphicon glyphicon-circle-arrow-right"></span></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <h3 class="underline">{{i18n .Lang "auth.user_avatar_upload"}}</h3>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <form method="POST" action="{{.AppUrl}}settings/avatar/upload" enctype="multipart/form-data">
+                                {{.xsrf_html}}{{.once_html}}
+                                <div class="form-group">
+                                    <p style="margin-bottom:10px;"><strong>{{i18n .Lang "auth.user_avatar_support_info"}}</strong></p>
+                                    <input type="file" name="avatar"/>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">{{i18n .Lang "auth.user_avatar_upload"}}&nbsp;&nbsp;<i class="icon-chevron-sign-right"></i></button>
+                                </div>
+                            </form>
+                            <img class="middle" src="{{.User.AvatarLink100}}" style="width:100px;height:100px;">
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+{{end}}

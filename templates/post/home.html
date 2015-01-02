@@ -1,0 +1,49 @@
+{{template "base/base.html" .}}
+{{template "base/base_common.html" .}}
+{{define "meta"}}
+    <title>{{i18n .Lang "app_name"}} - {{i18n .Lang "app_intro"}}</title>
+    <meta name="description" content="{{i18n .Lang "app_desc"}}" />
+    <meta name="keywords" content="{{i18n .Lang "app_keywords"}}">
+{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content" class="col-md-9">
+        <div class="box">
+            <div class="box-heading">
+                <!-- Category list -->
+                <div class="nav-cats">
+                    {{template "post/component/nav-cats.html" .}}
+                </div>
+
+                {{if .TopicsOfCategory}}
+                <!-- Topics of Category -->
+                <div class="nav-topics">
+                    {{template "post/component/nav-topics.html" dict "Topics" .TopicsOfCategory}}
+                </div>
+                {{end}}
+            </div>
+            <!-- Post list -->
+            {{if .paginator.Nums}}
+            <div class="box-body">
+                <div class="post-list">
+                    {{template "post/component/posts.html" dict "root" . "Posts" .Posts}}
+                    <div class="post-pg">
+                        {{template "base/paginator_pn.html" .}}
+                    </div>
+                </div>
+                
+            </div>
+            {{else}}
+                <div class="">
+                    <div class="text-center">{{i18n .Lang "postnav.not_found_posts"}}</div>
+                </div>
+            {{end}}
+        </div>
+	</div>
+
+    <div id="sidebar" class="col-md-3">
+        {{template "post/component/sidebar.html" .}}
+    </div>
+
+</div>
+{{end}}

@@ -1,0 +1,45 @@
+{{template "admin/base/base.html" .}}
+{{template "admin/base/base_common.html" .}}
+{{define "meta"}}<title>{{i18n .Lang "model.delete_category"}} - {{i18n .Lang "app_name"}}</title>{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content">
+        <div class="col-md-2">
+            {{template "admin/sidenav.html" .}}
+        </div>
+        <div class="col-md-10">
+            {{if .Error}}
+            <div class="alert alert-danger">
+                {{.Error}}
+            </div>
+            {{end}}
+            <div class="box">
+                <div class="cell first breadcrumb">
+                    <a href="{{.AppUrl}}admin"><i class="icon icon-home"></i></a><i class="divider icon-angle-right"></i><a href="{{.AppUrl}}admin/category">{{i18n .Lang "model.admin_category"}}</a><i class="divider icon-angle-right"></i><a href="{{.AppUrl}}admin/category/{{.Object.Id}}">{{i18n .Lang "model.delete_category"}} {{.Object.Name}}</a>
+                </div>
+                <div class="cell last slim">
+                    <form action="{{.AppUrl}}admin/category/{{.Object.Id}}/delete" method="POST">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td>Id:</td>
+                                    <td>{{.Object.Id}}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{i18n .Lang "model.category"}}:</td>
+                                    <td>{{.Object.Name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        {{.xsrf_html}}{{.once_html}}
+                        <div class="form-group">
+                            <button class="btn btn-danger">{{i18n .Lang "delete"}}&nbsp;&nbsp;<i class="icon-remove"></i></button>
+                        </div>
+                    </form>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

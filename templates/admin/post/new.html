@@ -1,0 +1,34 @@
+{{template "admin/base/base.html" .}}
+{{template "admin/base/base_common.html" .}}
+{{define "meta"}}<title>{{i18n .Lang "model.new_post"}} - {{i18n .Lang "app_name"}}</title>{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content">
+        <div class="col-md-2">
+            {{template "admin/sidenav.html" .}}
+        </div>
+        <div class="col-md-10">
+            {{if .Error}}
+            <div class="alert alert-danger">
+                {{.Error}}
+            </div>
+            {{end}}
+            <div class="box">
+                <div class="cell first breadcrumb">
+                    <a href="{{.AppUrl}}admin"><i class="icon icon-home"></i></a><i class="divider icon-angle-right"></i><a href="{{.AppUrl}}admin/post">{{i18n .Lang "model.admin_post"}}</a><i class="divider icon-angle-right"></i><a href="{{.AppUrl}}admin/post/new">{{i18n .Lang "model.new_post"}}</a>
+                </div>
+                <div class="cell last slim">
+                    <form action="{{.AppUrl}}admin/post/new" method="POST">
+                        {{.xsrf_html}}{{.once_html}}
+                        {{template "admin/component/fields.html" dict "root" $ "FormSets" .PostAdminFormSets}}
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">{{i18n .Lang "save"}}&nbsp;&nbsp;<i class="icon-chevron-sign-right"></i></button>
+                        </div>
+                    </form>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

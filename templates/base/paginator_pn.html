@@ -1,0 +1,17 @@
+{{if gt .paginator.PageNums 1}}
+<ul class="pager">
+    {{if .paginator.HasPrev}}
+        <li class="previous"><a href="{{.paginator.PageLinkPrev}}">&larr; {{i18n .Lang "paginator.prev_page"}}</a></li>
+    {{else}}
+        <li class="previous disabled"><a>&larr; {{i18n .Lang "paginator.prev_page"}}</a></li>
+    {{end}}
+    <li class="pager-nums">
+        {{.paginator.Page}} / {{.paginator.PageNums}}
+    </li>
+    {{if .paginator.HasNext}}
+        <li class="next"><a href="{{.paginator.PageLinkNext}}">{{i18n .Lang "paginator.next_page"}} &rarr;</a></li>
+    {{else}}
+        <li class="next disabled"><a>{{i18n .Lang "paginator.next_page"}} &rarr;</a></li>
+    {{end}}
+</ul>
+{{end}}

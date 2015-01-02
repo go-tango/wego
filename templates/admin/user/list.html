@@ -1,0 +1,67 @@
+{{template "admin/base/base.html" .}}
+{{template "admin/base/base_common.html" .}}
+{{define "meta"}}<title>{{i18n .Lang "model.admin_user"}} - {{i18n .Lang "app_name"}}</title>{{end}}
+{{define "body"}}
+<div class="row">
+    <div id="content">
+        <div class="col-md-2">
+            {{template "admin/sidenav.html" .}}
+        </div>
+        <div class="col-md-10">
+            {{if .Error}}
+            <div class="alert alert-danger">
+                {{.Error}}
+            </div>
+            {{end}}
+            <div class="box">
+                <div class="cell first breadcrumb">
+                    <a href="{{.AppUrl}}admin"><i class="icon icon-home"></i></a><i class="divider icon-angle-right"></i><a href="{{.AppUrl}}admin/user">{{i18n .Lang "model.admin_user"}}</a>
+                </div>
+                <div class="cell last slim">
+                    {{if .flash.DeleteSuccess}}
+                    <div class="alert alert-info">
+                        {{i18n .Lang "admin.success_delete"}}
+                    </div>
+                    {{end}}
+                    <p>
+                        <a href="/admin/user/new" class="btn btn-default">{{i18n .Lang "model.new_user"}}</a>
+                         <form action="{{urlfor "UserAdminRouter.List"}}">
+                            <input type="text" name="q" value="{{.q}}" placeholder="{{i18n .Lang "auth.username_or_email"}}"/><input type="submit" value="{{i18n .Lang "search"}}"/>
+                        </form>
+                    </p>
+                    <table class="table table-hover table-condensed color-link">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>{{i18n .Lang "model.user_username"}}</th>
+                                <th>{{i18n .Lang "model.user_email"}}</th>
+                                <th>{{i18n .Lang "model.user_isadmin"}}</th>
+                                <th>{{i18n .Lang "model.user_isactive"}}</th>
+                                <th>{{i18n .Lang "model.user_isforbid"}}</th>
+                                <th>{{i18n .Lang "model.created"}}</th>
+                                <th>{{i18n .Lang "model.updated"}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range $user := .Objects}}
+                            <tr>
+                                <td><a href="{{$.AppUrl}}admin/user/{{$user.Id}}">{{$user.Id}}</a></td>
+                                <td><a href="{{$.AppUrl}}admin/user/{{$user.Id}}">{{$user.UserName}}</a></td>
+                                <td>{{$user.Email}}</td>
+                                <td>{{$user.IsAdmin|boolicon}}</td>
+                                <td>{{$user.IsActive|boolicon}}</td>
+                                <td>{{$user.IsForbid|boolicon}}</td>
+                                <td>{{$user.Created|datetime}}</td>
+                                <td>{{$user.Updated|datetime}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                    {{template "base/paginator.html" .}}
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

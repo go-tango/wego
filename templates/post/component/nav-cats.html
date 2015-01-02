@@ -1,0 +1,32 @@
+<div class="btn-group">
+		<button type="button" class="btn btn-default"><a href="{{$.AppUrl}}"><span class="glyphicon glyphicon-home"></span></a></button>
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<span class="caret"></span>
+			<span class="sr-only">Toggle Dropdown</span>
+		</button>
+	 
+		<ul class="dropdown-menu" role="menu">
+		{{range .Categories}}
+		    <li role="presentation"><a role="menuitem" href="{{.Link}}">{{i18n $.Lang (print "category." .Name)}}</a></li>
+		{{end}}
+		</ul>
+</div>
+
+{{if ne $.CategorySlug "home"}}
+<span>
+		<i class="glyphicon glyphicon-chevron-right"></i>
+		{{$.Category.Name}}
+</span>
+{{end}}
+<ul class="nav nav-tabs navbar-right" role="tablist">
+	{{if eq $.CategorySlug "home"}}
+	  	<li {{if eq $.SortSlug ""}}class="active"{{end}} {{if eq $.SortSlug "hot"}}class="active"{{end}}><a href="{{.AppUrl}}hot">{{i18n $.Lang "postnav.recent_updated_posts"}}</a></li>
+	  	<li {{if eq $.SortSlug "recent"}}class="active"{{end}}><a href="{{.AppUrl}}recent">{{i18n $.Lang "postnav.recent_posts"}}</a></li>
+	  	<li {{if eq $.SortSlug "cold"}}class="active"{{end}}><a href="{{.AppUrl}}cold">{{i18n $.Lang "postnav.posts_not_commented"}}</a></li>
+	{{else}}
+	  	<li {{if eq $.SortSlug ""}}class="active"{{end}} {{if eq $.SortSlug "hot"}}class="active"{{end}}><a href="{{.AppUrl}}category/{{$.CategorySlug}}/hot">{{i18n $.Lang "postnav.recent_updated_posts"}}</a></li>
+	  	<li {{if eq $.SortSlug "recent"}}class="active"{{end}}><a href="{{.AppUrl}}category/{{$.CategorySlug}}/recent">{{i18n $.Lang "postnav.recent_posts"}}</a></li>
+	  	<li {{if eq $.SortSlug "cold"}}class="active"{{end}}><a href="{{.AppUrl}}category/{{$.CategorySlug}}/cold">{{i18n $.Lang "postnav.posts_not_commented"}}</a></li>
+	{{end}}
+  
+</ul>

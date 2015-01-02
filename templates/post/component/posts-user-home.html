@@ -1,0 +1,13 @@
+{{range .Posts}}
+<div class="post noavatar cell post-item">
+	<h3 class="title">
+		<a href="{{.Link}}">{{.Title}}</a>
+	</h3>
+	<div class="meta">
+		{{if not $.root.IsCategory}}<a class="tag" href="{{.Category.Link}}">{{i18n $.root.Lang (print "category." .Category.Name)}}</a> • {{end}}{{if not $.root.IsTopic}}<a class="tag" href="{{.Topic.Link}}">{{.Topic.Name}}</a> • {{end}}<span class="time">{{timesince $.root.Lang .Created}}</span>{{if .Replys}}{{if .LastReply}} • <span class="last-reply">{{i18n $.root.Lang "post.last_reply"}} <a href="{{.User.Link}}">{{.LastReply.NickName}}</a></span>{{end}}{{end}}
+		<div class="data hidden-xs pull-right">
+			 {{if .Replys}}{{.Replys}} <span class="glyphicon glyphicon-comment"></span>{{end}} {{if .Favorites}}{{.Favorites}} <span class="glyphicon glyphicon-eye-open"></span>{{end}}
+		</div>
+	</div>
+</div>
+{{end}}

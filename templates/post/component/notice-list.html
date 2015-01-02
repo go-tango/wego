@@ -1,0 +1,24 @@
+{{range .Notifications}}
+<div class="notice">
+    <div>
+        <a href="{{.FromUser.Link}}" title="{{.FromUser.NickName}}" class="avatar">
+            <img src="{{.FromUser.AvatarLink24}}" class="small">
+        </a>
+        <a href="{{.FromUser.Link}}"><strong>{{.FromUser.NickName}}</strong></a>
+        {{i18n $.root.Lang "notice.notice_at"}}
+        <a href="{{.Link}}" class="notice-title">
+            {{if isnotificationread .Status}}
+                {{.Title}}
+            {{else}}
+                <strong style="color:green;">{{.Title}}</strong>
+            {{end}}
+        </a>
+        {{i18n $.root.Lang "notice.notice_at_post"}}
+        <span class="notice-time">{{timesince $.root.Lang .Created}}
+    </div>
+    
+    <div class="notice-content markdown">
+            {{.GetContentCache|str2html}}
+    </div> 
+</div>
+{{end}}  
