@@ -100,7 +100,10 @@ func (this *Home) Get() {
 	this.Data["TheUserFavoritePosts"] = favPosts
 	this.Data["TheUserFavoritePostsMore"] = favNums >= 8
 
-	this.Render("user/home.html", this.Data)
+	err := this.Render("user/home.html", this.Data)
+	if err != nil {
+		this.Result = err
+	}
 }
 
 type Posts struct {

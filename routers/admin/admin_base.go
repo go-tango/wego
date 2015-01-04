@@ -86,6 +86,8 @@ func (this *ModelAdminRouter) Before() {
 
 		name := fmt.Sprintf("%sAdmin", model)
 		this.Data[name] = true
+	} else {
+		panic("no model found")
 	}
 	this.TplNames = tplNames
 }

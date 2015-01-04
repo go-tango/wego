@@ -376,7 +376,7 @@ func FuncMap() template.FuncMap {
 	r["isnotificationread"] = isnotificationread
 	r["getbulletintype"] = getbulletintype
 	r["dateformat"] = DateFormat
-	r["date"] = Date
+	//r["date"] = Date
 	r["compare"] = Compare
 	r["substr"] = Substr
 	r["html2str"] = Html2str
