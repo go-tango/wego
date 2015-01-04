@@ -370,11 +370,6 @@ func (this *Topic) Post() {
 	this.ServeJson(this.Data)
 }
 
-// Post Router
-type PostRouter struct {
-	base.BaseRouter
-}
-
 type NewPost struct {
 	base.BaseRouter
 }
@@ -467,6 +462,11 @@ func (this *NewPost) Post() {
 		return
 	}
 	this.Render("post/new.html", this.Data)
+}
+
+// Post Router
+type PostRouter struct {
+	base.BaseRouter
 }
 
 func (this *PostRouter) loadPost(post *models.Post, user *models.User) bool {
