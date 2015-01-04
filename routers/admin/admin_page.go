@@ -17,7 +17,7 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
+	"github.com/lunny/log"
 	"github.com/astaxie/beego/orm"
 
 	"github.com/go-tango/wego/modules/models"
@@ -53,7 +53,7 @@ func (this *PageAdminList) Get() {
 	qs := models.Pages().RelatedSel()
 	if err := this.SetObjects(qs, &pages); err != nil {
 		this.Data["Error"] = err
-		beego.Error(err)
+		log.Error(err)
 	}
 }
 
@@ -80,7 +80,7 @@ func (this *PageAdminNew) Post() {
 		this.FlashRedirect(fmt.Sprintf("/admin/page/%d", a.Id), 302, "CreateSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }
@@ -115,7 +115,7 @@ func (this *PageAdminEdit) Post() {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	} else {
@@ -138,7 +138,7 @@ func (this *PageAdminDelete) Post() {
 		this.FlashRedirect("/admin/page", 302, "DeleteSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }

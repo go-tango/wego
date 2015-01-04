@@ -15,16 +15,15 @@
 package auth
 
 import (
-	"github.com/astaxie/beego"
 	"strings"
+
+	"github.com/lunny/log"
 
 	"github.com/go-tango/wego/modules/auth"
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
 	"github.com/go-tango/wego/setting"
-
-	"github.com/lunny/log"
 )
 
 // LoginRouter serves login page.
@@ -210,7 +209,7 @@ func (this *RegisterActive) Get() {
 		user.IsActive = true
 		user.Rands = models.GetUserSalt()
 		if err := user.Update("IsActive", "Rands", "Updated"); err != nil {
-			beego.Error("Active: user Update ", err)
+			log.Error("Active: user Update ", err)
 		}
 		if this.IsLogin {
 			this.User = user
@@ -315,7 +314,7 @@ func (this *ResetRouter) Post() {
 		user.Rands = models.GetUserSalt()
 
 		if err := auth.SaveNewPassword(&user, form.Password); err != nil {
-			beego.Error("ResetPost Save New Password: ", err)
+			log.Error("ResetPost Save New Password: ", err)
 		}
 
 		if this.IsLogin {

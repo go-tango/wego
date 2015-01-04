@@ -15,22 +15,20 @@
 package attachment
 
 import (
-	"github.com/go-tango/wego/setting"
 	"io/ioutil"
 	"net/http"
 	"path"
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
-	//"github.com/astaxie/beego/context"
+	"github.com/lunny/log"
+	"github.com/lunny/tango"
 
+	"github.com/go-tango/wego/setting"
 	"github.com/go-tango/wego/modules/attachment"
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
-
-	"github.com/lunny/tango"
 )
 
 type QiniuUploadRouter struct {
@@ -69,7 +67,7 @@ func (this *QiniuUploadRouter) Post() {
 
 	// save and resize image
 	if err := attachment.SaveImageToQiniu(&image, file, mime, handler.Filename, t, setting.QiniuPostBucket); err != nil {
-		beego.Error(err)
+		log.Error(err)
 		return
 	}
 

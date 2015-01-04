@@ -17,7 +17,7 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
+	"github.com/lunny/log"
 	"github.com/astaxie/beego/orm"
 
 	"github.com/go-tango/wego/modules/auth"
@@ -63,7 +63,7 @@ func (this *UserAdminList) Get() {
 	this.Data["q"] = q
 	if err := this.SetObjects(qs, &users); err != nil {
 		this.Data["Error"] = err
-		beego.Error(err)
+		log.Error(err)
 	}
 }
 
@@ -90,7 +90,7 @@ func (this *UserAdminNew) Post() {
 		this.FlashRedirect(fmt.Sprintf("/admin/user/%d", user.Id), 302, "CreateSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }
@@ -125,7 +125,7 @@ func (this *UserAdminEdit) Post() {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	} else {
@@ -148,7 +148,7 @@ func (this *UserAdminDelete) Post() {
 		this.FlashRedirect("/admin/user", 302, "DeleteSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }

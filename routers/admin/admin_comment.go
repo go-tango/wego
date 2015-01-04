@@ -17,7 +17,7 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
+	"github.com/lunny/log"
 	"github.com/astaxie/beego/orm"
 
 	"github.com/go-tango/wego/modules/models"
@@ -53,7 +53,7 @@ func (this *CommentAdminList) Get() {
 	qs := models.Comments().RelatedSel()
 	if err := this.SetObjects(qs, &comments); err != nil {
 		this.Data["Error"] = err
-		beego.Error(err)
+		log.Error(err)
 	}
 }
 
@@ -80,7 +80,7 @@ func (this *CommentAdminNew) Post() {
 		this.FlashRedirect(fmt.Sprintf("/admin/comment/%d", comment.Id), 302, "CreateSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }
@@ -115,7 +115,7 @@ func (this *CommentAdminEdit) Post() {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	} else {
@@ -138,7 +138,7 @@ func (this *CommentAdminDelete) Post() {
 		this.FlashRedirect("/admin/comment", 302, "DeleteSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }

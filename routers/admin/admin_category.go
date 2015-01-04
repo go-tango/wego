@@ -17,8 +17,8 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/lunny/log"
 
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/post"
@@ -53,7 +53,7 @@ func (this *CategoryAdminList) Get() {
 	qs := models.Categories().RelatedSel()
 	if err := this.SetObjects(qs, &cats); err != nil {
 		this.Data["Error"] = err
-		beego.Error(err)
+		log.Error(err)
 	}
 }
 
@@ -80,7 +80,7 @@ func (this *CategoryAdminNew) Post() {
 		this.FlashRedirect(fmt.Sprintf("/admin/category/%d", cat.Id), 302, "CreateSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }
@@ -115,7 +115,7 @@ func (this *CategoryAdminEdit) Post() {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	} else {
@@ -144,7 +144,7 @@ func (this *CategoryAdminDelete) Post() {
 			this.FlashRedirect("/admin/category", 302, "DeleteSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	}

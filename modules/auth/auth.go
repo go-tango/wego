@@ -17,7 +17,6 @@ package auth
 import (
 	"encoding/hex"
 	"fmt"
-	//"github.com/astaxie/beego/context"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -26,18 +25,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	//"github.com/astaxie/beego/session"
 	"github.com/Unknwon/i18n"
+	"github.com/lunny/tango"
+	"github.com/go-xweb/httpsession"
+	"github.com/lunny/log"
 
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
-	qio "github.com/qiniu/api/io"
 
-	"github.com/lunny/tango"
-	"github.com/go-xweb/httpsession"
+	qio "github.com/qiniu/api/io"
 )
 
 // CanRegistered checks if the username or e-mail is available.
@@ -236,7 +234,7 @@ func VerifyUser(user *models.User, username, password string) (success bool) {
 		// re-save discuz password
 		if len(user.Password) == 39 {
 			if err := SaveNewPassword(user, password); err != nil {
-				beego.Error("SaveNewPassword err: ", err.Error())
+				log.Error("SaveNewPassword err: ", err.Error())
 			}
 		}
 	}

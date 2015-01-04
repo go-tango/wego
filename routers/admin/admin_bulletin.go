@@ -2,7 +2,7 @@ package admin
 
 import (
 	"fmt"
-	"github.com/astaxie/beego"
+	"github.com/lunny/log"
 	"github.com/astaxie/beego/orm"
 	"github.com/go-tango/wego/modules/bulletin"
 	"github.com/go-tango/wego/modules/models"
@@ -36,7 +36,7 @@ func (this *BulletinAdminList) Get() {
 	qs := models.Bulletins().OrderBy("Type")
 	if err := this.SetObjects(qs, &bulletins); err != nil {
 		this.Data["Error"] = err
-		beego.Error(err)
+		log.Error(err)
 	}
 }
 
@@ -61,7 +61,7 @@ func (this *BulletinAdminNew) Post() {
 		this.FlashRedirect(fmt.Sprintf("/admin/bulletin/%d", bulletin.Id), 302, "CreateSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }
@@ -94,7 +94,7 @@ func (this *BulletinAdminEdit) Post() {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	} else {
@@ -118,7 +118,7 @@ func (this *BulletinAdminDelete) Post() {
 			this.FlashRedirect("/admin/bulletin", 302, "DeleteSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	}

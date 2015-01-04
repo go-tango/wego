@@ -15,13 +15,11 @@
 package auth
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/lunny/log"
 
 	"github.com/go-tango/wego/modules/auth"
 	"github.com/go-tango/wego/routers/base"
 	"github.com/go-tango/wego/setting"
-
-	"github.com/lunny/log"
 )
 
 // SettingsRouter serves user settings.
@@ -76,7 +74,7 @@ func (this *ProfileRouter) Post() {
 
 	if this.ValidFormSets(&profileForm) {
 		if err := profileForm.SaveUserProfile(&this.User); err != nil {
-			beego.Error("ProfileSave: save-profile", err)
+			log.Error("ProfileSave: save-profile", err)
 		}
 		this.FlashRedirect("/settings/profile", 302, "ProfileSave")
 		return

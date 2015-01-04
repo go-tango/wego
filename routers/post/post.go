@@ -17,18 +17,16 @@ package post
 import (
 	"strconv"
 
-	"github.com/astaxie/beego"
+	"github.com/lunny/log"
+
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/post"
 	"github.com/go-tango/wego/routers/base"
 	"github.com/go-tango/wego/setting"
-
 	"github.com/go-tango/wego/modules/utils"
-	"github.com/lunny/log"
 )
 
 //Post List Router
-
 type PostListRouter struct {
 	base.BaseRouter
 }
@@ -433,7 +431,7 @@ func (this *NewPost) Post() {
 			form.Topic = topic.Id
 			this.Data["Topic"] = &topic
 		} else {
-			beego.Error("Can not find topic by slug:", topicSlug)
+			log.Error("Can not find topic by slug:", topicSlug)
 		}
 	} else {
 		topicId, err := this.GetInt("Topic")
@@ -452,7 +450,7 @@ func (this *NewPost) Post() {
 		}
 	}
 	if categorySlug := this.GetString("category"); categorySlug != "" {
-		beego.Debug("Find category slug:", categorySlug)
+		log.Debug("Find category slug:", categorySlug)
 		category := models.Category{Slug: categorySlug}
 		category.Read("Slug")
 		this.Data["Category"] = &category

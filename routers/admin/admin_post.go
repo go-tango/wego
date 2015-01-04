@@ -17,8 +17,8 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/lunny/log"
 
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/post"
@@ -59,7 +59,7 @@ func (this *PostAdminList) Get() {
 	qs := models.Posts().RelatedSel()
 	if err := this.SetObjects(qs, &posts); err != nil {
 		this.Data["Error"] = err
-		beego.Error(err)
+		log.Error(err)
 	}
 }
 
@@ -86,7 +86,7 @@ func (this *PostAdminNew) Post() {
 		this.FlashRedirect(fmt.Sprintf("/admin/post/%d", post.Id), 302, "CreateSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }
@@ -123,7 +123,7 @@ func (this *PostAdminEdit) Post() {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	} else {
@@ -146,7 +146,7 @@ func (this *PostAdminDelete) Get() {
 		this.FlashRedirect("/admin/post", 302, "DeleteSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }

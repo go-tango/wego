@@ -19,8 +19,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/lunny/log"
 
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
@@ -67,7 +67,7 @@ func PostBrowsersAdd(uid int, ip string, post *models.Post) {
 		"Browsers": orm.ColValue(orm.Col_Add, 1),
 	})
 	if err != nil {
-		beego.Error("PostCounterAdd ", err)
+		log.Error("PostCounterAdd ", err)
 	}
 	setting.Cache.Put(key, true, 60)
 }
@@ -81,7 +81,7 @@ func PostReplysCount(post *models.Post) {
 		err = post.Update("Replys", "CanEdit")
 	}
 	if err != nil {
-		beego.Error("PostReplysCount ", err)
+		log.Error("PostReplysCount ", err)
 	}
 }
 

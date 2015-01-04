@@ -7,7 +7,7 @@ import (
 //var orm *xorm.Engine
 
 func Init(isProMode bool) {
-	// TODO: use xomr instead beego orm
+	// TODO: use xorm instead beego orm
 	/*var err error
 	orm, err = xorm.NewEngine(setting.DriverName, setting.DataSource)
 	if err != nil {

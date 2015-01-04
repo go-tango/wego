@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/lunny/log"
 
 	"github.com/go-tango/wego/modules/auth"
 	"github.com/go-tango/wego/modules/utils"
@@ -129,7 +129,7 @@ func (this *ModelAdminRouter) QueryObject() bool {
 	if err := qs.Filter("Id", id).Limit(1).One(object); err != nil {
 		this.NotFound()
 		if err != orm.ErrNoRows {
-			beego.Error("SetObject: ", err)
+			log.Error("SetObject: ", err)
 		}
 		return false
 

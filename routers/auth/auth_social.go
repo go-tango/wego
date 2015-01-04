@@ -15,19 +15,17 @@
 package auth
 
 import (
-	"github.com/astaxie/beego"
-
+	"github.com/lunny/tango"
+	"github.com/tango-contrib/session"
+	"github.com/go-xweb/httpsession"
+	"github.com/lunny/log"
 	"github.com/go-tango/social-auth"
+
 	"github.com/go-tango/wego/modules/auth"
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
 	"github.com/go-tango/wego/setting"
-
-	"github.com/lunny/tango"
-	"github.com/tango-contrib/session"
-	"github.com/go-xweb/httpsession"
-	"github.com/lunny/log"
 )
 
 type socialAuther struct {
@@ -181,7 +179,7 @@ func (this *SocialAuthRouter) Post() {
 			goto connect
 
 		} else {
-			beego.Error("Register: Failed ", err)
+			log.Error("Register: Failed ", err)
 		}
 	}
 
@@ -191,7 +189,7 @@ failed:
 
 connect:
 	if loginRedirect, _, err := setting.SocialAuth.ConnectAndLogin(this.Context, this.Session.Session, socialType, user.Id); err != nil {
-		beego.Error("ConnectAndLogin:", err)
+		log.Error("ConnectAndLogin:", err)
 		goto failed
 	} else {
 		this.Redirect(loginRedirect, 302)
