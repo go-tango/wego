@@ -62,7 +62,7 @@ So you could need Java Runtime. Or close this feature in code by yourself.
 
 ### Contact
 
-Maintain by [lunny](https://github.com/xiaolunwen)
+Maintain by [lunny](https://github.com/lunny)
 
 ## License
 
