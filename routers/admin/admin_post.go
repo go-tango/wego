@@ -20,14 +20,19 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/post"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/post"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 type PostAdminRouter struct {
 	ModelAdminRouter
 	object models.Post
+}
+
+func (this *PostAdminRouter) Before() {
+	this.Params().Set(":model", "post")
+	this.ModelAdminRouter.Before()
 }
 
 func (this *PostAdminRouter) Object() interface{} {
@@ -44,8 +49,12 @@ func (this *PostAdminRouter) GetForm(create bool) post.PostAdminForm {
 	return form
 }
 
+type PostAdminList struct {
+	PostAdminRouter
+}
+
 // view for list model data
-func (this *PostAdminRouter) List() {
+func (this *PostAdminList) Get() {
 	var posts []models.Post
 	qs := models.Posts().RelatedSel()
 	if err := this.SetObjects(qs, &posts); err != nil {
@@ -54,14 +63,18 @@ func (this *PostAdminRouter) List() {
 	}
 }
 
+type PostAdminNew struct {
+	PostAdminRouter
+}
+
 // view for create object
-func (this *PostAdminRouter) Create() {
+func (this *PostAdminNew) Get() {
 	form := this.GetForm(true)
 	this.SetFormSets(&form)
 }
 
 // view for new object save
-func (this *PostAdminRouter) Save() {
+func (this *PostAdminNew) Post() {
 	form := this.GetForm(true)
 	if !this.ValidFormSets(&form) {
 		return
@@ -78,15 +91,19 @@ func (this *PostAdminRouter) Save() {
 	}
 }
 
+type PostAdminEdit struct {
+	PostAdminRouter
+}
+
 // view for edit object
-func (this *PostAdminRouter) Edit() {
+func (this *PostAdminEdit) Get() {
 	form := this.GetForm(false)
 	form.SetFromPost(&this.object)
 	this.SetFormSets(&form)
 }
 
 // view for update object
-func (this *PostAdminRouter) Update() {
+func (this *PostAdminEdit) Post() {
 	form := this.GetForm(false)
 	if this.ValidFormSets(&form) == false {
 		return
@@ -114,12 +131,12 @@ func (this *PostAdminRouter) Update() {
 	}
 }
 
-// view for confirm delete object
-func (this *PostAdminRouter) Confirm() {
+type PostAdminDelete struct {
+	PostAdminRouter
 }
 
 // view for delete object
-func (this *PostAdminRouter) Delete() {
+func (this *PostAdminDelete) Get() {
 	if this.FormOnceNotMatch() {
 		return
 	}

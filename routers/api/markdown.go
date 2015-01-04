@@ -15,10 +15,15 @@
 package api
 
 import (
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/routers/base"
 )
 
-func (this *ApiRouter) Markdown() {
+type Markdown struct {
+	base.BaseRouter
+}
+
+func (this *Markdown) Post() {
 	if this.CheckActiveRedirect() {
 		return
 	}

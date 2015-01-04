@@ -26,7 +26,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/setting"
 )
 
 func init() {
@@ -466,7 +466,7 @@ func initExtraField() {
 		fSet.Field = func() template.HTML {
 			return template.HTML(fmt.Sprintf(`%v
 			<input id="%s" name="%s" type="text" value="" class="form-control" autocomplete="off"%s%s>`,
-				setting.Captcha.CreateCaptchaHtml(), fSet.Id, fSet.Name, fSet.Placeholder, fSet.Attrs))
+				setting.Captcha.CreateHtml(), fSet.Id, fSet.Name, fSet.Placeholder, fSet.Attrs))
 		}
 	})
 

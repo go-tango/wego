@@ -14,11 +14,11 @@
 
 package admin
 
-type AdminDashboardRouter struct {
+type AdminDashboard struct {
 	BaseAdminRouter
 }
 
-func (this *AdminDashboardRouter) Get() {
+func (this *AdminDashboard) Get() {
 	this.Data["consoleAdmin"] = true
-	this.RenderFile("admin/dashboard.html", this.Data)
+	this.Render("admin/dashboard.html", this.Data)
 }

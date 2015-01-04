@@ -20,14 +20,19 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/post"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/post"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 type CommentAdminRouter struct {
 	ModelAdminRouter
 	object models.Comment
+}
+
+func (this *CommentAdminRouter) Before() {
+	this.Params().Set(":model", "category")
+	this.ModelAdminRouter.Before()
 }
 
 func (this *CommentAdminRouter) Object() interface{} {
@@ -38,8 +43,12 @@ func (this *CommentAdminRouter) ObjectQs() orm.QuerySeter {
 	return models.Comments().RelatedSel()
 }
 
+type CommentAdminList struct {
+	CommentAdminRouter
+}
+
 // view for list model data
-func (this *CommentAdminRouter) List() {
+func (this *CommentAdminList) Get() {
 	var comments []models.Comment
 	qs := models.Comments().RelatedSel()
 	if err := this.SetObjects(qs, &comments); err != nil {
@@ -48,14 +57,18 @@ func (this *CommentAdminRouter) List() {
 	}
 }
 
+type CommentAdminNew struct {
+	CommentAdminRouter
+}
+
 // view for create object
-func (this *CommentAdminRouter) Create() {
+func (this *CommentAdminNew) Get() {
 	form := post.CommentAdminForm{Create: true}
 	this.SetFormSets(&form)
 }
 
 // view for new object save
-func (this *CommentAdminRouter) Save() {
+func (this *CommentAdminNew) Post() {
 	form := post.CommentAdminForm{Create: true}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -72,15 +85,19 @@ func (this *CommentAdminRouter) Save() {
 	}
 }
 
+type CommentAdminEdit struct {
+	CommentAdminRouter
+}
+
 // view for edit object
-func (this *CommentAdminRouter) Edit() {
+func (this *CommentAdminEdit) Get() {
 	form := post.CommentAdminForm{}
 	form.SetFromComment(&this.object)
 	this.SetFormSets(&form)
 }
 
 // view for update object
-func (this *CommentAdminRouter) Update() {
+func (this *CommentAdminEdit) Post() {
 	form := post.CommentAdminForm{}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -106,12 +123,12 @@ func (this *CommentAdminRouter) Update() {
 	}
 }
 
-// view for confirm delete object
-func (this *CommentAdminRouter) Confirm() {
+type CommentAdminDelete struct {
+	CommentAdminRouter
 }
 
 // view for delete object
-func (this *CommentAdminRouter) Delete() {
+func (this *CommentAdminDelete) Post() {
 	if this.FormOnceNotMatch() {
 		return
 	}

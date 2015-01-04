@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"io"
 	"path/filepath"
 	"strings"
 	"time"
@@ -30,10 +31,9 @@ import (
 
 	"github.com/lunny/log"
 
-	//"github.com/astaxie/beego"
-	"github.com/astaxie/beego/cache"
+	"github.com/macaron-contrib/cache"
 	"github.com/astaxie/beego/orm"
-	"github.com/astaxie/beego/utils/captcha"
+	"github.com/tango-contrib/captcha"
 	"github.com/beego/compress"
 	"github.com/Unknwon/i18n"
 	"github.com/go-tango/social-auth"
@@ -41,7 +41,7 @@ import (
 )
 
 const (
-	APP_VER = "1.3.0.0"
+	APP_VER = "0.1.0.0"
 )
 
 var (
@@ -148,7 +148,7 @@ var (
 var (
 	Cfg     *goconfig.ConfigFile
 	Cache   cache.Cache
-	Captcha *captcha.Captcha
+	Captcha *captcha.Captchas
 )
 
 var (
@@ -179,6 +179,10 @@ var (
 	DataSource string
 	MaxIdle int
 	MaxOpen int
+)
+
+var (
+	Log *log.Logger
 )
 
 // LoadConfig loads configuration file.
@@ -221,8 +225,7 @@ func LoadConfig() *goconfig.ConfigFile {
 
 	// cache system
 	Cache, err = cache.NewCache("memory", `{"interval":360}`)
-
-	Captcha = captcha.NewCaptcha("/captcha/", Cache)
+	Captcha = captcha.New(captcha.Options{}, Cache)
 	Captcha.FieldIdName = "CaptchaId"
 	Captcha.FieldCaptchaName = "Captcha"
 
@@ -241,6 +244,23 @@ func LoadConfig() *goconfig.ConfigFile {
 	DataSource = Cfg.MustValue("orm", "data_source", "root:@/wetalk?charset=utf8")
 	MaxIdle = Cfg.MustInt("orm", "max_idle_conn", 30)
 	MaxOpen = Cfg.MustInt("orm", "max_open_conn", 50)
+
+	//set logger
+	os.MkdirAll("./logs", os.ModePerm)
+	f, err := os.Create("logs/wego.log")
+	if err != nil {
+		log.Panic("create log file failed:", err)
+	}
+
+	w := io.MultiWriter(f, os.Stdout)
+	log.SetOutput(w)
+	Log = log.Std
+
+	if IsProMode {
+		log.SetOutputLevel(log.Linfo)
+	} else {
+		log.SetOutputLevel(log.Ldebug)
+	}
 
 	// set default database
 	err = orm.RegisterDataBase("default", DriverName, DataSource, MaxIdle, MaxOpen)

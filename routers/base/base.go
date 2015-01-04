@@ -24,14 +24,13 @@ import (
 	"time"
 	"strconv"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	"github.com/Unknwon/i18n"
 
-	"github.com/go-tango/wetalk/modules/auth"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/modules/auth"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/setting"
 
 	"github.com/tango-contrib/renders"
 	"github.com/tango-contrib/session"
@@ -58,7 +57,7 @@ type BaseRouter struct {
 }
 
 // Prepare implemented Prepare method for baseRouter.
-func (this *BaseRouter) Prepare() {
+func (this *BaseRouter) Before() {
 	this.Data = make(renders.T)
 
 	if setting.EnforceRedirect {
@@ -84,7 +83,7 @@ func (this *BaseRouter) Prepare() {
 	case auth.GetUserFromSession(&this.User, this.Session.Session):
 		this.IsLogin = true
 	// save logined user if exist in remember cookie
-	case auth.LoginUserFromRememberCookie(&this.User, this.Ctx.Context):
+	case auth.LoginUserFromRememberCookie(&this.User, this.Ctx.Context, this.Session.Session):
 		this.IsLogin = true
 	}
 
@@ -142,7 +141,7 @@ func (this *BaseRouter) Prepare() {
 }
 
 // on router finished
-func (this *BaseRouter) Finish() {
+func (this *BaseRouter) After() {
 	if this.TplNames != "" {
 		if !this.Ctx.Written() {
 			this.Render(this.TplNames, this.Data)
@@ -159,7 +158,7 @@ func (this *BaseRouter) LoginUser(user *models.User, remember bool) string {
 	}
 
 	// login user
-	auth.LoginUser(user, this.Context, remember)
+	auth.LoginUser(user, this.Context, this.Session.Session, remember)
 
 	this.setLangCookie(i18n.GetLangByIndex(user.Lang))
 
@@ -260,12 +259,27 @@ func (this *BaseRouter) FlashRead(key string) (string, bool) {
 	return "", false
 }
 
+var (
+    FlashName = "WEGO_FLASH"
+	FlashSeperator = "WEGOFLASH"
+)
+
+func (this *BaseRouter) Store(data map[string]string) {
+	this.Data["flash"] = data
+	var flashValue string
+	for key, value := range data {
+		flashValue += "\x00" + key + "\x23" + FlashSeperator + "\x23" + value + "\x00"
+	}
+
+	auth.SetCookie(this.ResponseWriter, FlashName, url.QueryEscape(flashValue), 0, "/")
+}
+
 // write beego flash message
 func (this *BaseRouter) FlashWrite(key string, value string) {
-	flash := beego.NewFlash()
-	flash.Data[key] = value
-	//flash.Store(&this.Controller)
-	panic("flashwrite")
+	data := map[string]string {
+		key : value,
+	}
+	this.Store(data)
 }
 
 // check flash redirect, ensure browser redirect to uri and display flash message.
@@ -498,7 +512,7 @@ func (this *BaseRouter) GetString(k string) string {
 }
 
 func (this *BaseRouter) GetInt(k string) (int64, error) {
-	return strconv.ParseInt(k, 10, 64)
+	return strconv.ParseInt(this.Req().FormValue(k), 10, 64)
 }
 
 // setLang sets site language version.

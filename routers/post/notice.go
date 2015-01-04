@@ -1,9 +1,9 @@
 package post
 
 import (
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/post"
-	"github.com/go-tango/wetalk/routers/base"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/post"
+	"github.com/go-tango/wego/routers/base"
 )
 
 type NoticeRouter struct {

@@ -20,14 +20,19 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/page"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/page"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 type PageAdminRouter struct {
 	ModelAdminRouter
 	object models.Page
+}
+
+func (this *PageAdminRouter) Before() {
+	this.Params().Set(":model", "page")
+	this.ModelAdminRouter.Before()
 }
 
 func (this *PageAdminRouter) Object() interface{} {
@@ -38,8 +43,12 @@ func (this *PageAdminRouter) ObjectQs() orm.QuerySeter {
 	return models.Pages().RelatedSel()
 }
 
+type PageAdminList struct {
+	PageAdminRouter
+}
+
 // view for list model data
-func (this *PageAdminRouter) List() {
+func (this *PageAdminList) Get() {
 	var pages []models.Page
 	qs := models.Pages().RelatedSel()
 	if err := this.SetObjects(qs, &pages); err != nil {
@@ -48,14 +57,18 @@ func (this *PageAdminRouter) List() {
 	}
 }
 
+type PageAdminNew struct {
+	PageAdminRouter
+}
+
 // view for create object
-func (this *PageAdminRouter) Create() {
+func (this *PageAdminNew) Get() {
 	form := page.PageAdminForm{Create: true}
 	this.SetFormSets(&form)
 }
 
 // view for new object save
-func (this *PageAdminRouter) Save() {
+func (this *PageAdminNew) Post() {
 	form := page.PageAdminForm{Create: true}
 	if !this.ValidFormSets(&form) {
 		return
@@ -72,15 +85,19 @@ func (this *PageAdminRouter) Save() {
 	}
 }
 
+type PageAdminEdit struct {
+	PageAdminRouter
+}
+
 // view for edit object
-func (this *PageAdminRouter) Edit() {
+func (this *PageAdminEdit) Get() {
 	form := page.PageAdminForm{}
 	form.SetFromPage(&this.object)
 	this.SetFormSets(&form)
 }
 
 // view for update object
-func (this *PageAdminRouter) Update() {
+func (this *PageAdminEdit) Post() {
 	form := page.PageAdminForm{}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -106,12 +123,12 @@ func (this *PageAdminRouter) Update() {
 	}
 }
 
-// view for confirm delete object
-func (this *PageAdminRouter) Confirm() {
+type PageAdminDelete struct {
+	PageAdminRouter
 }
 
 // view for delete object
-func (this *PageAdminRouter) Delete() {
+func (this *PageAdminDelete) Post() {
 	if this.FormOnceNotMatch() {
 		return
 	}

@@ -15,19 +15,19 @@
 package attachment
 
 import (
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/setting"
 	"net/http"
 	"path"
-	"path/filepath"
+	//"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
+	"github.com/go-tango/wego/modules/attachment"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/routers/base"
 
-	"github.com/go-tango/wetalk/modules/attachment"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/routers/base"
+	"github.com/lunny/tango"
+	"github.com/lunny/log"
 )
 
 type UploadRouter struct {
@@ -66,17 +66,16 @@ func (this *UploadRouter) Post() {
 
 	// save and resize image
 	if err := attachment.SaveImage(&image, file, mime, handler.Filename, t); err != nil {
-		beego.Error(err)
+		log.Error(err)
 		return
 	}
 
 	result["link"] = image.LinkMiddle()
 	result["success"] = true
-
 }
 
-func ImageFilter(ctx *context.Context) {
-	token := path.Base(ctx.Request.RequestURI)
+func Image(ctx *tango.Context) {
+	token := path.Base(ctx.Req().RequestURI)
 
 	// split token and file ext
 	var filePath string
@@ -90,7 +89,7 @@ func ImageFilter(ctx *context.Context) {
 	// decode token to file path
 	var image models.Image
 	if err := image.DecodeToken(token); err != nil {
-		beego.Info(err)
+		log.Info(err)
 		return
 	}
 
@@ -100,12 +99,13 @@ func ImageFilter(ctx *context.Context) {
 	// if x-send on then set header and http status
 	// fall back use proxy serve file
 	if setting.ImageXSend {
-		ext := filepath.Ext(filePath)
-		ctx.Output.ContentType(ext)
-		ctx.Output.Header(setting.ImageXSendHeader, "/"+filePath)
-		ctx.Output.SetStatus(200)
+		//ext := filepath.Ext(filePath)
+		// TODO:
+		//ctx.Header().ContentType(ext)
+		ctx.Header().Set(setting.ImageXSendHeader, "/"+filePath)
+		ctx.WriteHeader(http.StatusOK)
 	} else {
 		// direct serve file use go
-		http.ServeFile(ctx.ResponseWriter, ctx.Request, filePath)
+		ctx.ServeFile(filePath)
 	}
 }

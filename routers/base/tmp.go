@@ -15,7 +15,7 @@
 package base
 
 import (
-	//"github.com/go-tango/wetalk/modules/mailer"
+	//"github.com/go-tango/wego/modules/mailer"
 )
 
 /*type TestRouter struct {

@@ -16,7 +16,7 @@ package attachment
 
 import (
 	"fmt"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/setting"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -30,8 +30,8 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 func SaveImage(m *models.Image, r io.ReadSeeker, mime string, filename string, created time.Time) error {

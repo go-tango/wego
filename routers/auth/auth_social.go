@@ -18,13 +18,14 @@ import (
 	"github.com/astaxie/beego"
 
 	"github.com/go-tango/social-auth"
-	"github.com/go-tango/wetalk/modules/auth"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
-	"github.com/go-tango/wetalk/routers/base"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/modules/auth"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/routers/base"
+	"github.com/go-tango/wego/setting"
 
 	"github.com/lunny/tango"
+	"github.com/tango-contrib/session"
 	"github.com/go-xweb/httpsession"
 	"github.com/lunny/log"
 )
@@ -32,42 +33,52 @@ import (
 type socialAuther struct {
 }
 
-func (p *socialAuther) IsUserLogin(ctx *tango.Context) (int, bool) {
-	/*if id := auth.GetUserIdFromSession(ctx.Input.CruSession); id > 0 {
+func (p *socialAuther) IsUserLogin(ctx *tango.Context, session *httpsession.Session) (int, bool) {
+	if id := auth.GetUserIdFromSession(session); id > 0 {
 		return id, true
-	}*/
+	}
 	return 0, false
 }
 
-func (p *socialAuther) LoginUser(ctx *tango.Context, uid int) (string, error) {
+func (p *socialAuther) LoginUser(ctx *tango.Context, session *httpsession.Session, uid int) (string, error) {
 	user := models.User{Id: uid}
 	if user.Read() == nil {
-		auth.LoginUser(&user, ctx, true)
+		auth.LoginUser(&user, ctx, session, true)
 	}
 	return auth.GetLoginRedirect(ctx), nil
 }
 
 var SocialAuther social.SocialAuther = new(socialAuther)
 
-func OAuthRedirect(ctx *tango.Context, session *httpsession.Session) {
-	redirect, err := setting.SocialAuth.OAuthRedirect(ctx, session)
+type OAuthRedirect struct {
+	tango.Ctx
+	session.Session
+}
+
+func (o *OAuthRedirect) Get() {
+	redirect, err := setting.SocialAuth.OAuthRedirect(o.Context, o.Session.Session)
 	if err != nil {
 		log.Error("OAuthRedirect", err)
 	}
 
 	if len(redirect) > 0 {
-		ctx.Redirect(redirect)
+		o.Context.Redirect(redirect)
 	}
 }
 
-func OAuthAccess(ctx *tango.Context, session *httpsession.Session) {
-	redirect, _, err := setting.SocialAuth.OAuthAccess(ctx, session)
+type OAuthAccess struct {
+	tango.Ctx
+	session.Session
+}
+
+func (o *OAuthAccess) Get() {
+	redirect, _, err := setting.SocialAuth.OAuthAccess(o.Context, o.Session.Session)
 	if err != nil {
 		log.Error("OAuthAccess", err)
 	}
 
 	if len(redirect) > 0 {
-		ctx.Redirect(redirect)
+		o.Context.Redirect(redirect)
 	}
 }
 
@@ -84,7 +95,7 @@ func (this *SocialAuthRouter) canConnect(socialType *social.SocialType) bool {
 	return true
 }
 
-func (this *SocialAuthRouter) Connect() {
+func (this *SocialAuthRouter) Get() {
 	this.TplNames = "auth/connect.html"
 
 	if this.CheckLoginRedirect(false) {
@@ -107,7 +118,7 @@ func (this *SocialAuthRouter) Connect() {
 	this.Data["Social"] = socialType
 }
 
-func (this *SocialAuthRouter) ConnectPost() {
+func (this *SocialAuthRouter) Post() {
 	this.TplNames = "auth/connect.html"
 
 	if this.CheckLoginRedirect(false) {

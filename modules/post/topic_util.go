@@ -15,7 +15,7 @@
 package post
 
 import (
-	"github.com/go-tango/wetalk/modules/models"
+	"github.com/go-tango/wego/modules/models"
 )
 
 func ListCategories(cats *[]models.Category) (int64, error) {

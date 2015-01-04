@@ -15,8 +15,8 @@
 package mailer
 
 import (
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/setting"
 )
 
 // Create New mail message use MailFrom and MailUser

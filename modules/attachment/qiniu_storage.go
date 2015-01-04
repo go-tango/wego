@@ -2,8 +2,8 @@ package attachment
 
 import (
 	"fmt"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
 	"github.com/qiniu/api/io"
 	"image"
 	"image/gif"

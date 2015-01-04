@@ -17,17 +17,17 @@ package api
 import (
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/auth"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
-	"github.com/go-tango/wetalk/routers/base"
+	"github.com/go-tango/wego/modules/auth"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/routers/base"
 )
 
-type ApiRouter struct {
+type Users struct {
 	base.BaseRouter
 }
 
-func (this *ApiRouter) Users() {
+func (this *Users) Post() {
 	result := map[string]interface{}{
 		"success": false,
 	}

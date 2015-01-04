@@ -15,7 +15,7 @@
 package attachment
 
 import (
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/setting"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -23,12 +23,14 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
+	//"github.com/astaxie/beego/context"
 
-	"github.com/go-tango/wetalk/modules/attachment"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
-	"github.com/go-tango/wetalk/routers/base"
+	"github.com/go-tango/wego/modules/attachment"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/routers/base"
+
+	"github.com/lunny/tango"
 )
 
 type QiniuUploadRouter struct {
@@ -76,8 +78,8 @@ func (this *QiniuUploadRouter) Post() {
 
 }
 
-func QiniuImageFilter(ctx *context.Context) {
-	var imageName = path.Base(ctx.Request.RequestURI)
+func QiniuImage(ctx *tango.Context) {
+	var imageName = path.Base(ctx.Req().RequestURI)
 	var imageKey string
 	var imageSize string
 	if i := strings.IndexRune(imageName, '.'); i == -1 {

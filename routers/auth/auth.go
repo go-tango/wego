@@ -18,11 +18,11 @@ import (
 	"github.com/astaxie/beego"
 	"strings"
 
-	"github.com/go-tango/wetalk/modules/auth"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
-	"github.com/go-tango/wetalk/routers/base"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/modules/auth"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/routers/base"
+	"github.com/go-tango/wego/setting"
 
 	"github.com/lunny/log"
 )
@@ -274,8 +274,13 @@ func (this *ForgotRouter) Post() {
 	this.Render("auth/forgot.html", this.Data)
 }
 
+// ForgotRouter serves login page.
+type ResetRouter struct {
+	base.BaseRouter
+}
+
 // Reset implemented user password reset.
-func (this *ForgotRouter) Reset() {
+func (this *ResetRouter) Get() {
 	code := this.GetString(":code")
 	this.Data["Code"] = code
 
@@ -292,7 +297,7 @@ func (this *ForgotRouter) Reset() {
 }
 
 // Reset implemented user password reset.
-func (this *ForgotRouter) ResetPost() {
+func (this *ResetRouter) Post() {
 	code := this.GetString(":code")
 	this.Data["Code"] = code
 

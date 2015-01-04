@@ -20,14 +20,19 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/post"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/post"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 type CategoryAdminRouter struct {
 	ModelAdminRouter
 	object models.Category
+}
+
+func (this *CategoryAdminRouter) Before() {
+	this.Params().Set(":model", "category")
+	this.ModelAdminRouter.Before()
 }
 
 func (this *CategoryAdminRouter) Object() interface{} {
@@ -38,8 +43,12 @@ func (this *CategoryAdminRouter) ObjectQs() orm.QuerySeter {
 	return models.Categories().RelatedSel()
 }
 
+type CategoryAdminList struct {
+	CategoryAdminRouter
+}
+
 // view for list model data
-func (this *CategoryAdminRouter) List() {
+func (this *CategoryAdminList) Get() {
 	var cats []models.Category
 	qs := models.Categories().RelatedSel()
 	if err := this.SetObjects(qs, &cats); err != nil {
@@ -48,14 +57,18 @@ func (this *CategoryAdminRouter) List() {
 	}
 }
 
+type CategoryAdminNew struct {
+	CategoryAdminRouter
+}
+
 // view for create object
-func (this *CategoryAdminRouter) Create() {
+func (this *CategoryAdminNew) Get() {
 	form := post.CategoryAdminForm{Create: true}
 	this.SetFormSets(&form)
 }
 
 // view for new object save
-func (this *CategoryAdminRouter) Save() {
+func (this *CategoryAdminNew) Post() {
 	form := post.CategoryAdminForm{Create: true}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -72,15 +85,19 @@ func (this *CategoryAdminRouter) Save() {
 	}
 }
 
+type CategoryAdminEdit struct {
+	CategoryAdminRouter
+}
+
 // view for edit object
-func (this *CategoryAdminRouter) Edit() {
+func (this *CategoryAdminEdit) Get() {
 	form := post.CategoryAdminForm{}
 	form.SetFromCategory(&this.object)
 	this.SetFormSets(&form)
 }
 
 // view for update object
-func (this *CategoryAdminRouter) Update() {
+func (this *CategoryAdminEdit) Post() {
 	form := post.CategoryAdminForm{Id: this.object.Id}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -106,12 +123,12 @@ func (this *CategoryAdminRouter) Update() {
 	}
 }
 
-// view for confirm delete object
-func (this *CategoryAdminRouter) Confirm() {
+type CategoryAdminDelete struct {
+	CategoryAdminRouter
 }
 
 // view for delete object
-func (this *CategoryAdminRouter) Delete() {
+func (this *CategoryAdminDelete) Post() {
 	if this.FormOnceNotMatch() {
 		return
 	}

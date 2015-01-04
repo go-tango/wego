@@ -32,7 +32,7 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/setting"
 )
 
 func NumberEncode(number string, alphabet []byte) string {

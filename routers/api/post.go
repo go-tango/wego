@@ -2,10 +2,15 @@ package api
 
 import (
 	"github.com/astaxie/beego/orm"
-	"github.com/go-tango/wetalk/modules/models"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/routers/base"
 )
 
-func (this *ApiRouter) Post() {
+type Post struct {
+	base.BaseRouter
+}
+
+func (this *Post) Post() {
 	if this.CheckActiveRedirect() {
 		return
 	}

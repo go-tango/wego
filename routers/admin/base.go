@@ -17,14 +17,14 @@ package admin
 import (
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/models"
+	"github.com/go-tango/wego/modules/models"
 )
 
-type AdminRouter struct {
+type ModelGet struct {
 	BaseAdminRouter
 }
 
-func (this *AdminRouter) ModelGet() {
+func (this *ModelGet) Get() {
 	id := this.GetString("id")
 	model := this.GetString("model")
 	result := map[string]interface{}{
@@ -57,7 +57,11 @@ func (this *AdminRouter) ModelGet() {
 	}
 }
 
-func (this *AdminRouter) ModelSelect() {
+type ModelSelect struct {
+	BaseAdminRouter
+}
+
+func (this *ModelSelect) Post() {
 	search := this.GetString("search")
 	model := this.GetString("model")
 	result := map[string]interface{}{

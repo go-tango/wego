@@ -17,10 +17,10 @@ package auth
 import (
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
-	"github.com/go-tango/wetalk/routers/base"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/routers/base"
+	"github.com/go-tango/wego/setting"
 )
 
 type UserRouter struct {
@@ -28,7 +28,7 @@ type UserRouter struct {
 }
 
 func (this *UserRouter) getUser(user *models.User) bool {
-	username := this.GetString(":username")
+	username := this.Params().Get(":username")
 	user.UserName = username
 
 	err := user.Read("UserName")
@@ -51,7 +51,11 @@ func (this *UserRouter) getUser(user *models.User) bool {
 	return false
 }
 
-func (this *UserRouter) Home() {
+type Home struct {
+	UserRouter
+}
+
+func (this *Home) Get() {
 	this.Data["IsUserHomePage"] = true
 
 	var user models.User
@@ -99,7 +103,11 @@ func (this *UserRouter) Home() {
 	this.Render("user/home.html", this.Data)
 }
 
-func (this *UserRouter) Posts() {
+type Posts struct {
+	UserRouter
+}
+
+func (this *Posts) Get() {
 	var user models.User
 	if this.getUser(&user) {
 		return
@@ -119,7 +127,11 @@ func (this *UserRouter) Posts() {
 	this.Render("user/posts.html", this.Data)
 }
 
-func (this *UserRouter) Comments() {
+type Comments struct {
+	UserRouter
+}
+
+func (this *Comments) Get() {
 	var user models.User
 	if this.getUser(&user) {
 		return
@@ -213,7 +225,11 @@ func (this *UserRouter) getFollows(user *models.User, following bool) []map[stri
 	return users
 }
 
-func (this *UserRouter) Following() {
+type Following struct {
+	UserRouter
+}
+
+func (this *Following) Get() {
 	var user models.User
 	if this.getUser(&user) {
 		return
@@ -225,7 +241,11 @@ func (this *UserRouter) Following() {
 	this.Render("user/following.html", this.Data)
 }
 
-func (this *UserRouter) Followers() {
+type Followers struct {
+	UserRouter
+}
+
+func (this *Followers) Get() {
 	var user models.User
 	if this.getUser(&user) {
 		return
@@ -237,7 +257,11 @@ func (this *UserRouter) Followers() {
 	this.Render("user/followers.html", this.Data)
 }
 
-func (this *UserRouter) FollowTopics() {
+type FollowTopics struct {
+	UserRouter
+}
+
+func (this *FollowTopics) Get() {
 	this.TplNames = "user/follow-topics.html"
 
 	var user models.User
@@ -257,7 +281,11 @@ func (this *UserRouter) FollowTopics() {
 	this.Data["TheUserFollowTopics"] = topics
 }
 
-func (this *UserRouter) FavoritePosts() {
+type FavoritePosts struct {
+	UserRouter
+}
+
+func (this *FavoritePosts) Get() {
 	this.TplNames = "user/favorite-posts.html"
 
 	var user models.User

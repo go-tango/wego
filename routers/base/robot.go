@@ -19,9 +19,7 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/astaxie/beego"
-
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/setting"
 )
 
 var robotTxt string
@@ -35,26 +33,23 @@ Disallow: /
 
 // RobotRouter implemented global settings for all other routers.
 type RobotRouter struct {
-	beego.Controller
 }
 
 // Get implemented Prepare method for RobotRouter.
-func (this *RobotRouter) Get() {
-	if len(robotTxt) == 0 {
-		// Generate "robot.txt".
-		t := template.New("robotTpl")
-		t.Parse(robotTpl)
-		uas := strings.Split(setting.Cfg.MustValue("robot", "uas"), "|")
-
-		data := make(map[string]interface{})
-		data["Uas"] = uas
-		data["Disallow"] = setting.Cfg.MustValue("robot", "disallow")
-
-		buf := new(bytes.Buffer)
-		t.Execute(buf, data)
-		robotTxt = buf.String()
+func (this *RobotRouter) Get() string {
+	if len(robotTxt) > 0 {
+		return robotTxt
 	}
 
-	this.Ctx.WriteString(robotTxt)
-	return
+	// Generate "robot.txt".
+	t := template.New("robotTpl")
+	t.Parse(robotTpl)
+	uas := strings.Split(setting.Cfg.MustValue("robot", "uas"), "|")
+
+	buf := new(bytes.Buffer)
+	t.Execute(buf, map[string]interface{}{
+		"Uas": uas,
+		"Disallow": setting.Cfg.MustValue("robot", "disallow"),
+	})
+	return buf.String()
 }

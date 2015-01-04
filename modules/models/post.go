@@ -21,8 +21,8 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/Unknwon/i18n"
 
-	"github.com/go-tango/wetalk/modules/utils"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/setting"
 )
 
 // post content

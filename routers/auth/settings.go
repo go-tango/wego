@@ -17,115 +17,20 @@ package auth
 import (
 	"github.com/astaxie/beego"
 
-	"github.com/go-tango/wetalk/modules/auth"
-	"github.com/go-tango/wetalk/routers/base"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/modules/auth"
+	"github.com/go-tango/wego/routers/base"
+	"github.com/go-tango/wego/setting"
 
 	"github.com/lunny/log"
 )
 
 // SettingsRouter serves user settings.
-type SettingsRouter struct {
+type ProfileRouter struct {
 	base.BaseRouter
 }
 
-func (this *SettingsRouter) ChangePassword() {
-	this.Data["IsUserSettingPage"] = true
-
-	//need login
-	if this.CheckLoginRedirect() {
-		return
-	}
-
-	formPwd := auth.PasswordForm{}
-	this.SetFormSets(&formPwd)
-	this.Render("settings/change_password.html", this.Data)
-}
-
-func (this *SettingsRouter) ChangePasswordSave() {
-	this.Data["IsUserSettingPage"] = true
-	if this.CheckLoginRedirect() {
-		return
-	}
-
-	pwdForm := auth.PasswordForm{User: &this.User}
-
-	this.Data["Form"] = pwdForm
-
-	if this.ValidFormSets(&pwdForm) {
-		// verify success and save new password
-		if err := auth.SaveNewPassword(&this.User, pwdForm.Password); err == nil {
-			this.FlashRedirect("/settings/change/password", 302, "PasswordSave")
-			return
-		} else {
-			log.Error("ProfileSave: change-password", err)
-		}
-	}
-
-	this.Render("settings/change_password.html", this.Data)
-}
-
-func (this *SettingsRouter) AvatarSetting() {
-	this.Data["IsUserSettingPage"] = true
-	//need login
-	if this.CheckLoginRedirect() {
-		return
-	}
-
-	form := auth.UserAvatarForm{}
-	form.SetFromUser(&this.User)
-	this.SetFormSets(&form)
-	this.Render("settings/user_avatar.html", this.Data)
-}
-
-func (this *SettingsRouter) AvatarSettingSave() {
-	this.Data["IsUserSettingPage"] = true
-	//need login
-	if this.CheckLoginRedirect() {
-		return
-	}
-	avatarType, _ := this.GetInt("AvatarType")
-	form := auth.UserAvatarForm{AvatarType: int(avatarType)}
-	this.Data["Form"] = form
-
-	if this.ValidFormSets(&form) {
-		if err := auth.SaveAvatarType(&this.User, int(avatarType)); err == nil {
-			this.FlashRedirect("/settings/avatar", 302, "AvatarSettingSave")
-			return
-		} else {
-			log.Error("ProfileSave: avatar-setting", err)
-		}
-	}
-	this.Render("settings/user_avatar.html", this.Data)
-}
-
-func (this *SettingsRouter) AvatarUpload() {
-	this.Data["IsUserSettingPage"] = true
-	//need login and active
-	if this.CheckLoginRedirect() {
-		return
-	}
-
-	// get file object
-	file, handler, err := this.Ctx.Req().FormFile("avatar")
-	if err != nil {
-		return
-	}
-	defer file.Close()
-	mime := handler.Header.Get("Content-Type")
-	if err := auth.UploadUserAvatarToQiniu(file, handler.Filename, mime, setting.QiniuAvatarBucket, &this.User); err != nil {
-		return
-	}
-
-	userAvatarForm := auth.UserAvatarForm{}
-	userAvatarForm.SetFromUser(&this.User)
-	this.SetFormSets(&userAvatarForm)
-	this.FlashRedirect("/settings/avatar", 302, "AvatarUploadSuccess")
-	this.Render("settings/user_avatar.html", this.Data)
-}
-
 // Profile implemented user profile settings page.
-func (this *SettingsRouter) Profile() {
+func (this *ProfileRouter) Get() {
 	this.Data["IsUserSettingPage"] = true
 
 	// need login
@@ -141,7 +46,7 @@ func (this *SettingsRouter) Profile() {
 }
 
 // ProfileSave implemented save user profile.
-func (this *SettingsRouter) ProfileSave() {
+func (this *ProfileRouter) Post() {
 	this.Data["IsUserSettingPage"] = true
 	if this.CheckLoginRedirect() {
 		return
@@ -178,4 +83,114 @@ func (this *SettingsRouter) ProfileSave() {
 	}
 
 	this.Render("settings/profile.html", this.Data)
+}
+
+
+// SettingsRouter serves user settings.
+type PasswordRouter struct {
+	base.BaseRouter
+}
+
+func (this *PasswordRouter) Get() {
+	this.Data["IsUserSettingPage"] = true
+
+	//need login
+	if this.CheckLoginRedirect() {
+		return
+	}
+
+	formPwd := auth.PasswordForm{}
+	this.SetFormSets(&formPwd)
+	this.Render("settings/change_password.html", this.Data)
+}
+
+func (this *PasswordRouter) Post() {
+	this.Data["IsUserSettingPage"] = true
+	if this.CheckLoginRedirect() {
+		return
+	}
+
+	pwdForm := auth.PasswordForm{User: &this.User}
+
+	this.Data["Form"] = pwdForm
+
+	if this.ValidFormSets(&pwdForm) {
+		// verify success and save new password
+		if err := auth.SaveNewPassword(&this.User, pwdForm.Password); err == nil {
+			this.FlashRedirect("/settings/change/password", 302, "PasswordSave")
+			return
+		} else {
+			log.Error("ProfileSave: change-password", err)
+		}
+	}
+
+	this.Render("settings/change_password.html", this.Data)
+}
+
+// SettingsRouter serves user settings.
+type AvatarRouter struct {
+	base.BaseRouter
+}
+
+func (this *AvatarRouter) Get() {
+	this.Data["IsUserSettingPage"] = true
+	//need login
+	if this.CheckLoginRedirect() {
+		return
+	}
+
+	form := auth.UserAvatarForm{}
+	form.SetFromUser(&this.User)
+	this.SetFormSets(&form)
+	this.Render("settings/user_avatar.html", this.Data)
+}
+
+func (this *AvatarRouter) Post() {
+	this.Data["IsUserSettingPage"] = true
+	//need login
+	if this.CheckLoginRedirect() {
+		return
+	}
+	avatarType, _ := this.GetInt("AvatarType")
+	form := auth.UserAvatarForm{AvatarType: int(avatarType)}
+	this.Data["Form"] = form
+
+	if this.ValidFormSets(&form) {
+		if err := auth.SaveAvatarType(&this.User, int(avatarType)); err == nil {
+			this.FlashRedirect("/settings/avatar", 302, "AvatarSettingSave")
+			return
+		} else {
+			log.Error("ProfileSave: avatar-setting", err)
+		}
+	}
+	this.Render("settings/user_avatar.html", this.Data)
+}
+
+type AvatarUploadRouter struct {
+	base.BaseRouter
+}
+
+func (this *AvatarUploadRouter) Post() {
+	this.Data["IsUserSettingPage"] = true
+	//need login and active
+	if this.CheckLoginRedirect() {
+		return
+	}
+
+	// get file object
+	file, handler, err := this.Ctx.Req().FormFile("avatar")
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	mime := handler.Header.Get("Content-Type")
+	if err := auth.UploadUserAvatarToQiniu(file, handler.Filename, mime, setting.QiniuAvatarBucket, &this.User); err != nil {
+		return
+	}
+
+	userAvatarForm := auth.UserAvatarForm{}
+	userAvatarForm.SetFromUser(&this.User)
+	this.SetFormSets(&userAvatarForm)
+	this.FlashRedirect("/settings/avatar", 302, "AvatarUploadSuccess")
+	this.Render("settings/user_avatar.html", this.Data)
 }

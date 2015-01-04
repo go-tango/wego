@@ -15,15 +15,15 @@
 package page
 
 import (
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/routers/base"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/routers/base"
 )
 
-type PageRouter struct {
+type Show struct {
 	base.BaseRouter
 }
 
-func (this *PageRouter) loadPage(page *models.Page) bool {
+func (this *Show) loadPage(page *models.Page) bool {
 	uri := this.Ctx.Req().RequestURI
 	err := models.Pages().RelatedSel("User").Filter("IsPublish", true).Filter("Uri", uri).One(page)
 	if err == nil {
@@ -34,10 +34,10 @@ func (this *PageRouter) loadPage(page *models.Page) bool {
 	return err != nil
 }
 
-func (this *PageRouter) Show() {
+func (this *Show) Get() {
 	page := models.Page{}
 	if this.loadPage(&page) {
 		return
 	}
-	this.RenderFile("page/show.html", this.Data)
+	this.Render("page/show.html", this.Data)
 }

@@ -4,14 +4,19 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"github.com/go-tango/wetalk/modules/bulletin"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/bulletin"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 type BulletinAdminRouter struct {
 	ModelAdminRouter
 	object models.Bulletin
+}
+
+func (this *BulletinAdminRouter) Before() {
+	this.Params().Set(":model", "bulletin")
+	this.ModelAdminRouter.Before()
 }
 
 func (this *BulletinAdminRouter) Object() interface{} {
@@ -21,7 +26,12 @@ func (this *BulletinAdminRouter) Object() interface{} {
 func (this *BaseAdminRouter) ObjectQs() orm.QuerySeter {
 	return models.Bulletins()
 }
-func (this *BulletinAdminRouter) List() {
+
+type BulletinAdminList struct {
+	BulletinAdminRouter
+}
+
+func (this *BulletinAdminList) Get() {
 	var bulletins []models.Bulletin
 	qs := models.Bulletins().OrderBy("Type")
 	if err := this.SetObjects(qs, &bulletins); err != nil {
@@ -30,12 +40,16 @@ func (this *BulletinAdminRouter) List() {
 	}
 }
 
-func (this *BulletinAdminRouter) Create() {
+type BulletinAdminNew struct {
+	BulletinAdminRouter
+}
+
+func (this *BulletinAdminNew) Get() {
 	form := bulletin.BulletinAdminForm{Create: true}
 	this.SetFormSets(&form)
 }
 
-func (this *BulletinAdminRouter) Save() {
+func (this *BulletinAdminNew) Post() {
 	form := bulletin.BulletinAdminForm{Create: true}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -52,12 +66,17 @@ func (this *BulletinAdminRouter) Save() {
 	}
 }
 
-func (this *BulletinAdminRouter) Edit() {
+type BulletinAdminEdit struct {
+	BulletinAdminRouter
+}
+
+func (this *BulletinAdminEdit) Get() {
 	form := bulletin.BulletinAdminForm{}
 	form.SetFromBulletin(&this.object)
 	this.SetFormSets(&form)
 }
-func (this *BulletinAdminRouter) Update() {
+
+func (this *BulletinAdminEdit) Post() {
 	form := bulletin.BulletinAdminForm{Id: this.object.Id}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -82,10 +101,12 @@ func (this *BulletinAdminRouter) Update() {
 		this.Redirect(url, 302)
 	}
 }
-func (this *BulletinAdminRouter) Confirm() {
 
+type BulletinAdminDelete struct {
+	BulletinAdminRouter
 }
-func (this *BulletinAdminRouter) Delete() {
+
+func (this *BulletinAdminDelete) Post() {
 	if this.FormOnceNotMatch() {
 		return
 	}

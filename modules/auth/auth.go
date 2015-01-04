@@ -31,9 +31,9 @@ import (
 	//"github.com/astaxie/beego/session"
 	"github.com/Unknwon/i18n"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
-	"github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/setting"
 	qio "github.com/qiniu/api/io"
 
 	"github.com/lunny/tango"
@@ -141,12 +141,11 @@ func GetLoginRedirect(ctx *tango.Context) string {
 }
 
 // login user
-func LoginUser(user *models.User, ctx *tango.Context, remember bool) {
+func LoginUser(user *models.User, ctx *tango.Context, session *httpsession.Session, remember bool) {
 	// werid way of beego session regenerate id...
-	panic("TODO: ctx.Input")
-	//ctx.Input.CruSession.SessionRelease(ctx.ResponseWriter)
-	//ctx.Input.CruSession = beego.GlobalSessions.SessionRegenerateId(ctx.ResponseWriter, ctx.Req())
-	//ctx.Input.CruSession.Set("auth_user_id", user.Id)
+	//session.SessionRelease(ctx.ResponseWriter)
+	//session = beego.GlobalSessions.SessionRegenerateId(ctx.ResponseWriter, ctx.Req())
+	session.Set("auth_user_id", user.Id)
 
 	if remember {
 		WriteRememberCookie(user, ctx)
@@ -165,7 +164,7 @@ func DeleteRememberCookie(ctx *tango.Context) {
 	SetCookie(ctx, setting.CookieRememberName, "", -1)
 }
 
-func LoginUserFromRememberCookie(user *models.User, ctx *tango.Context) (success bool) {
+func LoginUserFromRememberCookie(user *models.User, ctx *tango.Context, session *httpsession.Session) (success bool) {
 	userName := GetCookie(ctx.Req(), setting.CookieUserName)
 	if len(userName) == 0 {
 		return false
@@ -188,7 +187,7 @@ func LoginUserFromRememberCookie(user *models.User, ctx *tango.Context) (success
 		return false
 	}
 
-	LoginUser(user, ctx, true)
+	LoginUser(user, ctx, session, true)
 
 	return true
 }

@@ -27,7 +27,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/models"
+	"github.com/go-tango/wego/modules/models"
 )
 
 func GetSecureCookie(req *http.Request, Secret, key string) (string, bool) {

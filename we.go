@@ -16,35 +16,24 @@
 package main
 
 import (
-	"os"
-	"fmt"
-	"io"
 	"time"
 	"html/template"
 
 	"github.com/lunny/tango"
-	"github.com/lunny/log"
 	"github.com/tango-contrib/session"
 	"github.com/tango-contrib/renders"
 	"github.com/tango-contrib/xsrf"
-
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
 	"github.com/go-tango/social-auth"
-	"github.com/go-tango/wetalk/routers"
-	"github.com/go-tango/wetalk/routers/auth"
-	"github.com/go-tango/wetalk/setting"
+
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/go-tango/wego/routers"
+	"github.com/go-tango/wego/routers/auth"
+	"github.com/go-tango/wego/setting"
+
 	_ "github.com/go-sql-driver/mysql"
 	. "github.com/qiniu/api/conf"
 )
-
-type Prepare interface {
-	Prepare()
-}
-
-type Finish interface {
-	Finish()
-}
 
 // We have to call a initialize function manully
 // because we use `bee bale` to pack static resources
@@ -52,22 +41,6 @@ type Finish interface {
 func initialize() {
 	setting.LoadConfig()
 
-	//set logger
-	f, err := os.Create("logs/wetalk.log")
-	if err != nil {
-		fmt.Println("create log file failed:", err)
-		return
-	}
-	defer f.Close()
-
-	w := io.MultiWriter(f, os.Stdout)
-	log.SetOutput(w)
-
-	if setting.IsProMode {
-		log.SetOutputLevel(log.Linfo)
-	} else {
-		log.SetOutputLevel(log.Ldebug)
-	}
 	/*beego.SetLogFuncCall(true)*/
 	setting.SocialAuth = social.NewSocial("/login/", auth.SocialAuther)
 	setting.SocialAuth.ConnectSuccessURL = "/settings/profile"
@@ -91,11 +64,9 @@ func mergeFuncMap(funcs ...template.FuncMap) template.FuncMap{
 }
 
 func newTango() *tango.Tango {
-	var logger = tango.NewLogger(os.Stdout)
-
 	return tango.NewWithLog(
-		logger,
-		tango.NewLogging(logger),
+		setting.Log,
+		tango.NewLogging(setting.Log),
 		tango.NewRecovery(true),
 		tango.NewCompress([]string{".js", ".css", ".html", ".htm"}),
 		tango.NewStatic("./static", "static", []string{"index.html", "index.htm"}),
@@ -105,7 +76,6 @@ func newTango() *tango.Tango {
 		tango.HandlerFunc(tango.RequestHandler),
 		tango.HandlerFunc(tango.ParamHandler),
 		tango.HandlerFunc(tango.ContextHandler),
-		tango.HandlerFunc(tango.EventHandler),
 		session.New(time.Duration(setting.SessionCookieLifeTime)),
 		renders.New(renders.Options{
 			Funcs: mergeFuncMap(utils.FuncMap(), setting.Funcs),
@@ -120,31 +90,14 @@ func main() {
 	if setting.EnableXSRF {
 		t.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
 	}
-	t.Use(tango.HandlerFunc(func(ctx *tango.Context){
-		if action := ctx.Action(); action != nil {
-			if p, ok := action.(Prepare); ok {
-				p.Prepare()
-			}
-		}
-		ctx.Next()
-	}))
-
-	t.Use(tango.HandlerFunc(func(ctx *tango.Context){
-		ctx.Next()
-
-		if action := ctx.Action(); action != nil {
-			if p, ok := action.(Finish); ok {
-				p.Finish()
-			}
-		}
-	}))
+	t.Use(tango.HandlerFunc(tango.EventHandler))
 
 	if setting.IsProMode {
 		t.Mode = tango.Prod
 	} else {
 		t.Mode = tango.Dev
 	}
-	log.Info(setting.APP_VER, setting.AppUrl)
+	setting.Log.Info("start WeGo version", setting.APP_VER, setting.AppUrl)
 
 	//initialize the routers
 	routers.Init(t)

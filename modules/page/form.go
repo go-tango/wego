@@ -17,8 +17,8 @@ package page
 import (
 	"github.com/astaxie/beego/validation"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 type PageAdminForm struct {

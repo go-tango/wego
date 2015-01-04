@@ -15,13 +15,15 @@
 package post
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/post"
-	"github.com/go-tango/wetalk/routers/base"
-	"github.com/go-tango/wetalk/setting"
+	"strconv"
 
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/astaxie/beego"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/post"
+	"github.com/go-tango/wego/routers/base"
+	"github.com/go-tango/wego/setting"
+
+	"github.com/go-tango/wego/modules/utils"
 	"github.com/lunny/log"
 )
 
@@ -154,8 +156,12 @@ func (h *Home) Get() error {
 	return h.Render("post/home.html", h.Data)
 }
 
-func (this *PostListRouter) Navs() {
-	sortSlug := this.GetString(":sortSlug")
+type Navs struct {
+	PostListRouter
+}
+
+func (this *Navs) Get() {
+	sortSlug := this.Params().Get(":sortSlug")
 	var posts []models.Post
 	qs := models.Posts()
 	cnt, _ := models.CountObjects(qs)
@@ -190,10 +196,14 @@ func (this *PostListRouter) Navs() {
 	this.Render("post/home.html", this.Data)
 }
 
+type Category struct {
+	PostListRouter
+}
+
 //Get the posts by category
-func (this *PostListRouter) Category() {
+func (this *Category) Get() {
 	//check category slug
-	slug := this.GetString(":slug")
+	slug := this.Params().Get(":slug")
 	cat := models.Category{Slug: slug}
 	if err := cat.Read("Slug"); err != nil {
 		this.NotFound()
@@ -226,10 +236,14 @@ func (this *PostListRouter) Category() {
 	this.Render("post/home.html", this.Data)
 }
 
-func (this *PostListRouter) CatNavs() {
+type CateNavs struct {
+	PostListRouter
+}
+
+func (this *CateNavs) Get() {
 	//check category slug and sort slug
-	catSlug := this.GetString(":catSlug")
-	sortSlug := this.GetString(":sortSlug")
+	catSlug := this.Params().Get(":catSlug")
+	sortSlug := this.Params().Get(":sortSlug")
 	cat := models.Category{Slug: catSlug}
 	if err := cat.Read("Slug"); err != nil {
 		this.NotFound()
@@ -363,7 +377,11 @@ type PostRouter struct {
 	base.BaseRouter
 }
 
-func (this *PostRouter) NewPost() {
+type NewPost struct {
+	base.BaseRouter
+}
+
+func (this *NewPost) Get() {
 	if this.CheckActiveRedirect() {
 		return
 	}
@@ -400,7 +418,7 @@ func (this *PostRouter) NewPost() {
 	this.Render("post/new.html", this.Data)
 }
 
-func (this *PostRouter) NewPostSubmit() {
+func (this *NewPost) Post() {
 	if this.CheckActiveRedirect() {
 		return
 	}
@@ -454,7 +472,8 @@ func (this *PostRouter) NewPostSubmit() {
 }
 
 func (this *PostRouter) loadPost(post *models.Post, user *models.User) bool {
-	id, _ := this.GetInt(":post")
+	postId := this.Params().Get(":post")
+	id, _ := strconv.ParseInt(postId, 10, 64)
 	if id > 0 {
 		qs := models.Posts().Filter("Id", id)
 		if user != nil {
@@ -481,8 +500,12 @@ func (this *PostRouter) loadComments(post *models.Post, comments *[]*models.Comm
 	}
 }
 
+type SinglePost struct {
+	PostRouter
+}
+
 //Post Page
-func (this *PostRouter) SinglePost() {
+func (this *SinglePost) Get() {
 	var postMd models.Post
 	if this.loadPost(&postMd, nil) {
 		return
@@ -512,7 +535,7 @@ func (this *PostRouter) SinglePost() {
 }
 
 //New Comment
-func (this *PostRouter) SinglePostCommentSubmit() {
+func (this *SinglePost) Post() {
 	if this.CheckActiveRedirect() {
 		return
 	}
@@ -548,7 +571,11 @@ func (this *PostRouter) SinglePostCommentSubmit() {
 	this.Render("post/post.html", this.Data)
 }
 
-func (this *PostRouter) EditPost() {
+type EditPost struct {
+	PostRouter
+}
+
+func (this *EditPost) Get() {
 	if this.CheckActiveRedirect() {
 		return
 	}
@@ -569,7 +596,7 @@ func (this *PostRouter) EditPost() {
 	this.Render("post/edit.html", this.Data)
 }
 
-func (this *PostRouter) EditPostSubmit() {
+func (this *PostRouter) Post() {
 	if this.CheckActiveRedirect() {
 		return
 	}

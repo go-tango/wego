@@ -20,14 +20,19 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wetalk/modules/auth"
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/auth"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 type UserAdminRouter struct {
 	ModelAdminRouter
 	object models.User
+}
+
+func (this *UserAdminRouter) Before() {
+	this.Params().Set(":model", "user")
+	this.ModelAdminRouter.Before()
 }
 
 func (this *UserAdminRouter) Object() interface{} {
@@ -38,8 +43,12 @@ func (this *UserAdminRouter) ObjectQs() orm.QuerySeter {
 	return models.Users().RelatedSel()
 }
 
+type UserAdminList struct {
+	UserAdminRouter
+}
+
 // view for list model data
-func (this *UserAdminRouter) List() {
+func (this *UserAdminList) Get() {
 	var q = this.GetString("q")
 	var users []models.User
 	var qs orm.QuerySeter
@@ -58,14 +67,18 @@ func (this *UserAdminRouter) List() {
 	}
 }
 
+type UserAdminNew struct {
+	UserAdminRouter
+}
+
 // view for create object
-func (this *UserAdminRouter) Create() {
+func (this *UserAdminNew) Get() {
 	form := auth.UserAdminForm{Create: true}
 	this.SetFormSets(&form)
 }
 
 // view for new object save
-func (this *UserAdminRouter) Save() {
+func (this *UserAdminNew) Post() {
 	form := auth.UserAdminForm{Create: true}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -82,15 +95,19 @@ func (this *UserAdminRouter) Save() {
 	}
 }
 
+type UserAdminEdit struct {
+	UserAdminRouter
+}
+
 // view for edit object
-func (this *UserAdminRouter) Edit() {
+func (this *UserAdminEdit) Get() {
 	form := auth.UserAdminForm{}
 	form.SetFromUser(&this.object)
 	this.SetFormSets(&form)
 }
 
 // view for update object
-func (this *UserAdminRouter) Update() {
+func (this *UserAdminEdit) Post() {
 	form := auth.UserAdminForm{Id: this.object.Id}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -116,12 +133,12 @@ func (this *UserAdminRouter) Update() {
 	}
 }
 
-// view for confirm delete object
-func (this *UserAdminRouter) Confirm() {
+type UserAdminDelete struct {
+	UserAdminRouter
 }
 
 // view for delete object
-func (this *UserAdminRouter) Delete() {
+func (this *UserAdminDelete) Post() {
 	if this.FormOnceNotMatch() {
 		return
 	}

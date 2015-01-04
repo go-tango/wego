@@ -17,17 +17,22 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/lunny/log"
 
-	"github.com/go-tango/wetalk/modules/models"
-	"github.com/go-tango/wetalk/modules/post"
-	"github.com/go-tango/wetalk/modules/utils"
+	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/modules/post"
+	"github.com/go-tango/wego/modules/utils"
 )
 
 type TopicAdminRouter struct {
 	ModelAdminRouter
 	object models.Topic
+}
+
+func (this *TopicAdminRouter) Before() {
+	this.Params().Set(":model", "topic")
+	this.ModelAdminRouter.Before()
 }
 
 func (this *TopicAdminRouter) Object() interface{} {
@@ -38,24 +43,32 @@ func (this *TopicAdminRouter) ObjectQs() orm.QuerySeter {
 	return models.Topics().RelatedSel()
 }
 
+type TopicAdminList struct {
+	TopicAdminRouter
+}
+
 // view for list model data
-func (this *TopicAdminRouter) List() {
+func (this *TopicAdminList) Get() {
 	var topics []models.Topic
 	qs := models.Topics().OrderBy("-Category__id").RelatedSel()
 	if err := this.SetObjects(qs, &topics); err != nil {
 		this.Data["Error"] = err
-		beego.Error(err)
+		log.Error(err)
 	}
 }
 
+type TopicAdminNew struct {
+	TopicAdminRouter
+}
+
 // view for create object
-func (this *TopicAdminRouter) Create() {
+func (this *TopicAdminNew) Get() {
 	form := post.TopicAdminForm{Create: true}
 	this.SetFormSets(&form)
 }
 
 // view for new object save
-func (this *TopicAdminRouter) Save() {
+func (this *TopicAdminNew) Post() {
 	form := post.TopicAdminForm{Create: true}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -67,20 +80,24 @@ func (this *TopicAdminRouter) Save() {
 		this.FlashRedirect(fmt.Sprintf("/admin/topic/%d", topic.Id), 302, "CreateSuccess")
 		return
 	} else {
-		beego.Error(err)
+		log.Error(err)
 		this.Data["Error"] = err
 	}
 }
 
+type TopicAdminEdit struct {
+	TopicAdminRouter
+}
+
 // view for edit object
-func (this *TopicAdminRouter) Edit() {
+func (this *TopicAdminEdit) Get() {
 	form := post.TopicAdminForm{}
 	form.SetFromTopic(&this.object)
 	this.SetFormSets(&form)
 }
 
 // view for update object
-func (this *TopicAdminRouter) Update() {
+func (this *TopicAdminEdit) Post() {
 	form := post.TopicAdminForm{Id: this.object.Id}
 	if this.ValidFormSets(&form) == false {
 		return
@@ -98,7 +115,7 @@ func (this *TopicAdminRouter) Update() {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	} else {
@@ -106,13 +123,12 @@ func (this *TopicAdminRouter) Update() {
 	}
 }
 
-// view for confirm delete object
-func (this *TopicAdminRouter) Confirm() {
-
+type TopicAdminDelete struct {
+	TopicAdminRouter
 }
 
 // view for delete object
-func (this *TopicAdminRouter) Delete() {
+func (this *TopicAdminDelete) Post() {
 	if this.FormOnceNotMatch() {
 		return
 	}
@@ -128,7 +144,7 @@ func (this *TopicAdminRouter) Delete() {
 			this.FlashRedirect("/admin/topic", 302, "DeleteSuccess")
 			return
 		} else {
-			beego.Error(err)
+			log.Error(err)
 			this.Data["Error"] = err
 		}
 	}

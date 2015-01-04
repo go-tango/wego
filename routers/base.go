@@ -1,4 +1,5 @@
 // Copyright 2013 wetalk authors
+// Copyright 2014 wego authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License"): you may
 // not use this file except in compliance with the License. You may obtain
@@ -16,129 +17,131 @@
 package routers
 
 import (
-	// "fmt"
-	// "github.com/astaxie/beego"
-	// "github.com/go-tango/wetalk/routers/admin"
-	// "github.com/go-tango/wetalk/routers/api"
-	// "github.com/go-tango/wetalk/routers/attachment"
-	"github.com/go-tango/wetalk/routers/auth"
-	// "github.com/go-tango/wetalk/routers/base"
-	// "github.com/go-tango/wetalk/routers/page"
-	 "github.com/go-tango/wetalk/routers/post"
-	// "github.com/go-tango/wetalk/setting"
+	"github.com/go-tango/wego/routers/admin"
+	"github.com/go-tango/wego/routers/api"
+	"github.com/go-tango/wego/routers/attachment"
+	"github.com/go-tango/wego/routers/auth"
+	"github.com/go-tango/wego/routers/base"
+	"github.com/go-tango/wego/routers/page"
+	"github.com/go-tango/wego/routers/post"
+	"github.com/go-tango/wego/setting"
 
 	"github.com/lunny/tango"
 )
 
 func Init(t *tango.Tango) {
-	/* Add Filters */
-	/*if setting.QiniuServiceEnabled {
-		beego.InsertFilter("/img/*", beego.BeforeRouter, attachment.QiniuImageFilter)
+	/* imgs */
+	if setting.QiniuServiceEnabled {
+		t.Get("/img/(.*)", attachment.QiniuImage)
 	} else {
-		beego.InsertFilter("/img/*", beego.BeforeRouter, attachment.ImageFilter)
+		t.Get("/img/(.*)", attachment.Image)
 	}
 
-	beego.InsertFilter("/captcha/*", beego.BeforeRouter, setting.Captcha.Handler)
-*/
-	//beego.InsertFilter("/login/*/access", beego.BeforeRouter, auth.OAuthAccess)
-	//beego.InsertFilter("/login/*", beego.BeforeRouter, auth.OAuthRedirect)
+	t.Use(setting.Captcha)
+	// oauth support
+	t.Get("/login/(.*)/access", new(auth.OAuthAccess))
+	t.Get("/login/(.*)", new(auth.OAuthRedirect))
 
 	/* Common Routers */
 	t.Get("/", new(post.Home))
 	t.Any("/topic/:slug", new(post.Topic))
 
-	/*posts := new(post.PostListRouter)
-	beego.Router("/:sortSlug(recent|hot|cold)", posts, "get:Navs")
-	beego.Router("/category/:slug", posts, "get:Category")
-	beego.Router("/category/:catSlug/:sortSlug(recent|hot|cold)", posts, "get:CatNavs")
+	t.Get("/:sortSlug", new(post.Navs))
+	t.Get("/category/:slug", new(post.Category))
+	t.Get("/category/:catSlug/:sortSlug", new(post.CateNavs))
 
-	postR := new(post.PostRouter)
-	beego.Router("/new", postR, "get:NewPost;post:NewPostSubmit")
-	beego.Router("/post/:post([0-9]+)", postR, "get:SinglePost;post:SinglePostCommentSubmit")
-	beego.Router("/post/:post([0-9]+)/edit", postR, "get:EditPost;post:EditPostSubmit")
+	t.Any("/new", new(post.NewPost))
+	t.Any("/post/:post", new(post.SinglePost))
+	t.Any("/post/:post/edit", new(post.EditPost))
 
-	noticeRouter := new(post.NoticeRouter)
-	beego.Router("/notification", noticeRouter, "get:Get")
+	t.Get("/notification", new(post.NoticeRouter))
 
 	if setting.SearchEnabled {
-		searchR := new(post.SearchRouter)
-		beego.Router("/search", searchR, "get:Get")
+		t.Get("/search", new(post.SearchRouter))
 	}
 
-	user := new(auth.UserRouter)
-	beego.Router("/user/:username/comments", user, "get:Comments")
-	beego.Router("/user/:username/posts", user, "get:Posts")
-	beego.Router("/user/:username/following", user, "get:Following")
-	beego.Router("/user/:username/followers", user, "get:Followers")
-	beego.Router("/user/:username/follow/topics", user, "get:FollowTopics")
-	beego.Router("/user/:username/favorite/posts", user, "get:FavoritePosts")
-	beego.Router("/user/:username", user, "get:Home")
-*/
+	t.Get("/user/:username/comments", new(auth.Comments))
+	t.Get("/user/:username/posts", new(auth.Posts))
+	t.Get("/user/:username/following", new(auth.Following))
+	t.Get("/user/:username/followers", new(auth.Followers))
+	t.Get("/user/:username/follow/topics", new(auth.FollowTopics))
+	t.Get("/user/:username/favorite/posts", new(auth.FavoritePosts))
+	t.Get("/user/:username", new(auth.Home))
 
 	t.Any("/login", new(auth.Login))
 	t.Get("/logout", new(auth.Logout))
 
-	//socialR := new(auth.SocialAuthRouter)
-	//beego.Router("/register/connect", socialR, "get:Connect;post:ConnectPost")
-
+	t.Any("/register/connect", new(auth.SocialAuthRouter))
 	t.Any("/register", new(auth.Register))
 	t.Get("/active/success", new(auth.RegisterSuccess))
 	t.Get("/active/:code", new(auth.RegisterActive))
 
-	/*
-	settings := new(auth.SettingsRouter)
-	beego.Router("/settings/profile", settings, "get:Profile;post:ProfileSave")
-	beego.Router("/settings/change/password", settings, "get:ChangePassword;post:ChangePasswordSave")
-	beego.Router("/settings/avatar", settings, "get:AvatarSetting;post:AvatarSettingSave")
-	beego.Router("/settings/avatar/upload", settings, "post:AvatarUpload")
+	t.Group("/settings", func(g *tango.Group) {
+		g.Any("/profile", new(auth.ProfileRouter))
+		g.Any("/change/password", new(auth.PasswordRouter))
+		g.Any("/avatar", new(auth.AvatarRouter))
+		g.Post("/avatar/upload", new(auth.AvatarUploadRouter))
+	})
 
-	forgot := new(auth.ForgotRouter)
-	beego.Router("/forgot", forgot)
-	beego.Router("/reset/:code([0-9a-zA-Z]+)", forgot, "get:Reset;post:ResetPost")
+	t.Any("/forgot", new(auth.ForgotRouter))
+	t.Any("/reset/:code", new(auth.ResetRouter))
 
 	if setting.QiniuServiceEnabled {
-		upload := new(attachment.QiniuUploadRouter)
-		beego.Router("/upload", upload, "post:Post")
+		t.Post("/upload", new(attachment.QiniuUploadRouter))
 	} else {
-		upload := new(attachment.UploadRouter)
-		beego.Router("/upload", upload, "post:Post")
+		t.Post("/upload", new(attachment.UploadRouter))
 	}
 
 	//download
 
 	/* API Routers*/
-	// apiR := new(api.ApiRouter)
-	// beego.Router("/api/user", apiR, "post:Users")
-	// beego.Router("/api/md", apiR, "post:Markdown")
-	// beego.Router("/api/post", apiR, "post:Post")
+	t.Post("/api/user", new(api.Users))
+	t.Post("/api/md", new(api.Markdown))
+	t.Post("/api/post", new(api.Post))
 
 	// /* Admin Routers */
-	// adminDashboard := new(admin.AdminDashboardRouter)
-	// beego.Router("/admin", adminDashboard)
+	t.Get("/admin", new(admin.AdminDashboard))
 
-	// adminR := new(admin.AdminRouter)
-	// beego.Router("/admin/model/get", adminR, "post:ModelGet")
-	// beego.Router("/admin/model/select", adminR, "post:ModelSelect")
+	t.Get("/admin/model/get", new(admin.ModelGet))
+	t.Post("/admin/model/select", new(admin.ModelSelect))
 
-	// routes := map[string]beego.ControllerInterface{
-	// 	"user":     new(admin.UserAdminRouter),
-	// 	"post":     new(admin.PostAdminRouter),
-	// 	"comment":  new(admin.CommentAdminRouter),
-	// 	"topic":    new(admin.TopicAdminRouter),
-	// 	"category": new(admin.CategoryAdminRouter),
-	// 	"page":     new(admin.PageAdminRouter),
-	// 	"bulletin": new(admin.BulletinAdminRouter),
-	// }
-	// for name, router := range routes {
-	// 	beego.Router(fmt.Sprintf("/admin/:model(%s)", name), router, "get:List")
-	// 	beego.Router(fmt.Sprintf("/admin/:model(%s)/:id(new)", name), router, "get:Create;post:Save")
-	// 	beego.Router(fmt.Sprintf("/admin/:model(%s)/:id([0-9]+)", name), router, "get:Edit;post:Update")
-	// 	beego.Router(fmt.Sprintf("/admin/:model(%s)/:id([0-9]+)/:action(delete)", name), router, "get:Confirm;post:Delete")
-	// }
-	// pageR := new(page.PageRouter)
-	// beego.Router("/:slug", pageR, "get:Show")
+	t.Get("/admin/user", new(admin.UserAdminList))
+	t.Any("/admin/user/new", new(admin.UserAdminNew))
+	t.Any("/admin/user/:id", new(admin.UserAdminEdit))
+	t.Post("/admin/user/:id/:action", new(admin.UserAdminDelete))
+
+	t.Get("/admin/post", new(admin.PostAdminList))
+	t.Any("/admin/post/new", new(admin.PostAdminNew))
+	t.Any("/admin/post/:id", new(admin.PostAdminEdit))
+	t.Post("/admin/post/:id/:action", new(admin.PostAdminDelete))
+
+	t.Get("/admin/comment", new(admin.CommentAdminList))
+	t.Any("/admin/comment/new", new(admin.CommentAdminNew))
+	t.Any("/admin/comment/:id", new(admin.CommentAdminEdit))
+	t.Post("/admin/comment/:id/:action", new(admin.CommentAdminDelete))
+
+	t.Get("/admin/topic", new(admin.TopicAdminList))
+	t.Any("/admin/topic/new", new(admin.TopicAdminNew))
+	t.Any("/admin/topic/:id", new(admin.TopicAdminEdit))
+	t.Post("/admin/topic/:id/:action", new(admin.TopicAdminDelete))
+
+	t.Get("/admin/category", new(admin.CategoryAdminList))
+	t.Any("/admin/category/new", new(admin.CategoryAdminNew))
+	t.Any("/admin/category/:id", new(admin.CategoryAdminEdit))
+	t.Post("/admin/category/:id/:action", new(admin.CategoryAdminDelete))
+
+	t.Get("/admin/page", new(admin.PageAdminList))
+	t.Any("/admin/page/new", new(admin.PageAdminNew))
+	t.Any("/admin/page/:id", new(admin.PageAdminEdit))
+	t.Post("/admin/page/:id/:action", new(admin.PageAdminDelete))
+
+	t.Get("/admin/bulletin", new(admin.BulletinAdminList))
+	t.Any("/admin/bulletin/new", new(admin.BulletinAdminNew))
+	t.Any("/admin/bulletin/:id", new(admin.BulletinAdminEdit))
+	t.Post("/admin/bulletin/:id/:action", new(admin.BulletinAdminDelete))
+
+	t.Get("/:slug", new(page.Show))
 
 	// /* Robot routers for "robot.txt" */
-	// beego.Router("/robot.txt", &base.RobotRouter{})
-
+	t.Get("/robot.txt", new(base.RobotRouter))
 }
