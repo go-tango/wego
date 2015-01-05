@@ -66,16 +66,16 @@ func mergeFuncMap(funcs ...template.FuncMap) template.FuncMap{
 func newTango() *tango.Tango {
 	return tango.NewWithLog(
 		setting.Log,
-		tango.NewLogging(setting.Log),
-		tango.NewRecovery(true),
-		tango.NewCompress([]string{".js", ".css", ".html", ".htm"}),
-		tango.NewStatic("./static", "static", []string{"index.html", "index.htm"}),
-		tango.NewStatic("./static_source", "static_source", []string{"index.html", "index.htm"}),
-		tango.HandlerFunc(tango.ReturnHandler),
-		tango.HandlerFunc(tango.ResponseHandler),
-		tango.HandlerFunc(tango.RequestHandler),
-		tango.HandlerFunc(tango.ParamHandler),
-		tango.HandlerFunc(tango.ContextHandler),
+		tango.Logging(),
+		tango.Recovery(true),
+		tango.Compresses([]string{".js", ".css", ".html", ".htm"}),
+		tango.Static("./static", "static", []string{"index.html", "index.htm"}),
+		tango.Static("./static_source", "static_source", []string{"index.html", "index.htm"}),
+		tango.Return(),
+		tango.Responses(),
+		tango.Requests(),
+		tango.Param(),
+		tango.Contexts(),
 		session.New(time.Duration(setting.SessionCookieLifeTime)),
 		renders.New(renders.Options{
 			Funcs: mergeFuncMap(utils.FuncMap(), setting.Funcs),
@@ -90,7 +90,7 @@ func main() {
 	if setting.EnableXSRF {
 		t.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
 	}
-	t.Use(tango.HandlerFunc(tango.EventHandler))
+	t.Use(tango.Events())
 
 	if setting.IsProMode {
 		t.Mode = tango.Prod
