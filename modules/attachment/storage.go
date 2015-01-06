@@ -16,7 +16,6 @@ package attachment
 
 import (
 	"fmt"
-	"github.com/go-tango/wego/setting"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -28,8 +27,7 @@ import (
 
 	"github.com/nfnt/resize"
 
-	"github.com/astaxie/beego"
-
+	"github.com/go-tango/wego/setting"
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 )
@@ -156,7 +154,7 @@ func ImageResize(img *models.Image, im image.Image, width int) error {
 }
 
 func GenImagePath(img *models.Image) string {
-	return "upload/img/" + beego.Date(img.Created, "y/m/d/s/") + utils.ToStr(img.Id) + "/"
+	return "upload/img/" + utils.Date(img.Created, "y/m/d/s/") + utils.ToStr(img.Id) + "/"
 }
 
 func GenImageFilePath(img *models.Image, width int) string {

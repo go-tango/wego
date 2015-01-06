@@ -30,8 +30,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/astaxie/beego"
-
 	"github.com/go-tango/wego/setting"
 )
 
@@ -129,7 +127,7 @@ func VerifyTimeLimitCode(data string, minutes int, code string) bool {
 	retCode := CreateTimeLimitCode(data, minutes, start)
 	if retCode == code && minutes > 0 {
 		// check time is expired or not
-		before, _ := beego.DateParse(start, "YmdHi")
+		before, _ := DateParse(start, "YmdHi")
 		now := time.Now()
 		if before.Add(time.Minute*time.Duration(minutes)).Unix() > now.Unix() {
 			return true
@@ -151,16 +149,16 @@ func CreateTimeLimitCode(data string, minutes int, startInf interface{}) string 
 	if startInf == nil {
 		// Use now time create code
 		start = time.Now()
-		startStr = beego.Date(start, format)
+		startStr = Date(start, format)
 	} else {
 		// use start string create code
 		startStr = startInf.(string)
-		start, _ = beego.DateParse(startStr, format)
-		startStr = beego.Date(start, format)
+		start, _ = DateParse(startStr, format)
+		startStr = Date(start, format)
 	}
 
 	end = start.Add(time.Minute * time.Duration(minutes))
-	endStr = beego.Date(end, format)
+	endStr = Date(end, format)
 
 	// create sha1 encode string
 	sh := sha1.New()

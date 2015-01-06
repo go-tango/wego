@@ -23,6 +23,8 @@ import (
 	"github.com/tango-contrib/session"
 	"github.com/tango-contrib/renders"
 	"github.com/tango-contrib/xsrf"
+	"github.com/tango-contrib/events"
+	"github.com/tango-contrib/flash"
 	"github.com/go-tango/social-auth"
 
 	"github.com/go-tango/wego/modules/models"
@@ -41,7 +43,6 @@ import (
 func initialize() {
 	setting.LoadConfig()
 
-	/*beego.SetLogFuncCall(true)*/
 	setting.SocialAuth = social.NewSocial("/login/", auth.SocialAuther)
 	setting.SocialAuth.ConnectSuccessURL = "/settings/profile"
 	setting.SocialAuth.ConnectFailedURL = "/settings/profile"
@@ -63,34 +64,28 @@ func mergeFuncMap(funcs ...template.FuncMap) template.FuncMap{
 	return ret
 }
 
-func newTango() *tango.Tango {
-	return tango.NewWithLog(
-		setting.Log,
-		tango.Logging(),
-		tango.Recovery(true),
-		tango.Compresses([]string{".js", ".css", ".html", ".htm"}),
-		tango.Static("./static", "static", []string{"index.html", "index.htm"}),
+func initTango() *tango.Tango {
+	tg := tango.Classic(setting.Log)
+	tg.Use(
 		tango.Static("./static_source", "static_source", []string{"index.html", "index.htm"}),
-		tango.Return(),
-		tango.Responses(),
-		tango.Requests(),
-		tango.Param(),
-		tango.Contexts(),
 		session.New(time.Duration(setting.SessionCookieLifeTime)),
 		renders.New(renders.Options{
+			Directory: setting.TemplatesPath,
 			Funcs: mergeFuncMap(utils.FuncMap(), setting.Funcs),
 		}),
 	)
+	if setting.EnableXSRF {
+		tg.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
+	}
+	tg.Use(flash.Flashes())
+	tg.Use(events.Events())
+	return tg
 }
 
 func main() {
 	initialize()
 
-	t := newTango()
-	if setting.EnableXSRF {
-		t.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
-	}
-	t.Use(tango.Events())
+	t := initTango()
 
 	if setting.IsProMode {
 		t.Mode = tango.Prod

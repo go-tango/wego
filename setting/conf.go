@@ -112,6 +112,10 @@ var (
 	PostCountPerPage int
 )
 
+var (
+	TemplatesPath string = "templates"
+)
+
 const (
 	LangEnUS = iota
 	LangZhCN
@@ -465,7 +469,7 @@ func configWatcher() {
 					}
 					if event.Name == CompressConfPath {
 						settingCompress()
-						log.Info("Beego Compress Reloaded")
+						log.Info("Compress Reloaded")
 					}
 				}
 			}

@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
 	"github.com/go-tango/wego/modules/utils"
@@ -114,7 +113,7 @@ func (m *Image) GetExt() string {
 }
 
 func (m *Image) GetToken() string {
-	number := beego.Date(m.Created, "ymds") + utils.ToStr(m.Id)
+	number := utils.Date(m.Created, "ymds") + utils.ToStr(m.Id)
 	return utils.NumberEncode(number, setting.ImageLinkAlphabets)
 }
 
@@ -124,7 +123,7 @@ func (m *Image) DecodeToken(token string) error {
 		return fmt.Errorf("token `%s` too short <- `%s`", token, number)
 	}
 
-	if t, err := beego.DateParse(number[:8], "ymds"); err != nil {
+	if t, err := utils.DateParse(number[:8], "ymds"); err != nil {
 		return fmt.Errorf("token `%s` date parse error <- `%s`", token, number)
 	} else {
 		m.Created = t

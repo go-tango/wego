@@ -24,8 +24,8 @@ import (
 	"time"
 	"strings"
 	"regexp"
+	"sync"
 
-	"github.com/astaxie/beego"
 	"github.com/Unknwon/i18n"
 
 	"github.com/go-tango/wego/setting"
@@ -46,15 +46,15 @@ func boolicon(b bool) (s template.HTML) {
 }
 
 func date(t time.Time) string {
-	return beego.Date(t, setting.DateFormat)
+	return Date(t, setting.DateFormat)
 }
 
 func datetime(t time.Time) string {
-	return beego.Date(t, setting.DateTimeFormat)
+	return Date(t, setting.DateTimeFormat)
 }
 
 func datetimes(t time.Time) string {
-	return beego.Date(t, setting.DateTimeShortFormat)
+	return Date(t, setting.DateTimeShortFormat)
 }
 
 func loadtimes(t time.Time) int {
@@ -99,7 +99,7 @@ func timesince(lang string, t time.Time) string {
 	case seconds < 60*60*24*100:
 		return i18n.Tr(lang, "days_ago", seconds/(60*60*24))
 	default:
-		return beego.Date(t, setting.DateFormat)
+		return Date(t, setting.DateFormat)
 	}
 }
 
@@ -390,18 +390,23 @@ func FuncMap() template.FuncMap {
 	return r
 }
 
-func RenderTemplate(TplNames string, Data map[string]interface{}) string {
-	if beego.RunMode == "dev" {
-		beego.BuildTemplate(beego.ViewsPath)
-	}
+var (
+	templates   = make(map[string]*template.Template)
+	templatesLock sync.RWMutex
+)
+
+func RenderTemplate(tplNames string, data map[string]interface{}) string {
+	templatesLock.Lock()
+	defer templatesLock.Unlock()
 
 	ibytes := bytes.NewBufferString("")
-	if _, ok := beego.BeeTemplates[TplNames]; !ok {
-		panic("can't find templatefile in the path:" + TplNames)
+	if _, ok := templates[tplNames]; !ok {
+		panic("can't find templatefile in the path:" + tplNames)
 	}
-	err := beego.BeeTemplates[TplNames].ExecuteTemplate(ibytes, TplNames, Data)
+
+	err := templates[tplNames].ExecuteTemplate(ibytes, tplNames, data)
 	if err != nil {
-		beego.Trace("template Execute err:", err)
+		setting.Log.Debug("template Execute err:", err)
 	}
 	icontent, _ := ioutil.ReadAll(ibytes)
 	return string(icontent)

@@ -23,7 +23,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 
 	"github.com/go-tango/wego/setting"
@@ -338,12 +337,12 @@ func initCommonField() {
 	datetimeFunc := func(fSet *FieldSet) {
 		fSet.Field = func() template.HTML {
 			t := fSet.Value.(time.Time)
-			tval := beego.Date(t, setting.DateTimeFormat)
+			tval := Date(t, setting.DateTimeFormat)
 			if tval == "0001-01-01 00:00:00" {
 				t = time.Now()
 			}
 			if fSet.Type == "date" {
-				tval = beego.Date(t, setting.DateFormat)
+				tval = Date(t, setting.DateFormat)
 			}
 			return template.HTML(fmt.Sprintf(
 				`<input id="%s" name="%s" type="%s" value="%s" class="form-control"%s%s>`,
@@ -529,13 +528,13 @@ outFor:
 		case reflect.Struct:
 			if fT.Type.String() == "time.Time" {
 				if len(value) > 10 {
-					t, err := beego.DateParse(value, setting.DateTimeFormat)
+					t, err := DateParse(value, setting.DateTimeFormat)
 					if err != nil {
 						continue
 					}
 					f.Set(reflect.ValueOf(t))
 				} else {
-					t, err := beego.DateParse(value, setting.DateFormat)
+					t, err := DateParse(value, setting.DateFormat)
 					if err != nil {
 						continue
 					}

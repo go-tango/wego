@@ -12,7 +12,6 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-// Package routers implemented controller methods of beego.
 package base
 
 import (
@@ -26,37 +25,34 @@ import (
 
 	"github.com/astaxie/beego/validation"
 	"github.com/Unknwon/i18n"
+	"github.com/tango-contrib/renders"
+	"github.com/tango-contrib/session"
+	"github.com/tango-contrib/xsrf"
+	"github.com/tango-contrib/flash"
+	"github.com/lunny/tango"
 
 	"github.com/go-tango/wego/modules/auth"
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
-
-	"github.com/tango-contrib/renders"
-	"github.com/tango-contrib/session"
-	"github.com/tango-contrib/xsrf"
-	"github.com/lunny/tango"
 )
-
-type NestPreparer interface {
-	NestPrepare()
-}
 
 // baseRouter implemented global settings for all other routers.
 type BaseRouter struct {
-	//beego.Controller
 	tango.Ctx
 	session.Session
 	xsrf.Checker
+	renders.Renderer
+	flash.Flash
 	i18n.Locale
+
 	User    models.User
 	IsLogin bool
 	Data renders.T
 	TplNames string
-	renders.Renderer
 }
 
-// Prepare implemented Prepare method for baseRouter.
+// Before implemented Before method for baseRouter.
 func (this *BaseRouter) Before() {
 	this.Data = make(renders.T)
 
@@ -108,6 +104,7 @@ func (this *BaseRouter) Before() {
 	this.Data["AvatarURL"] = setting.AvatarURL
 	this.Data["IsProMode"] = setting.IsProMode
 	this.Data["SearchEnabled"] = setting.SearchEnabled
+	this.Data["Flush"] = this.Flash.Data()
 
 	// Redirect to make URL clean.
 	if this.setLang() {
@@ -116,11 +113,7 @@ func (this *BaseRouter) Before() {
 		return
 	}
 
-	// read flash message
-	//beego.ReadFromRequest(&this.Controller)
-
 	// pass xsrf helper to template context
-	//xsrfToken := this.XsrfToken()
 	this.Data["xsrf_token"] = this.XsrfValue
 	this.Data["xsrf_html"] = this.XsrfFormHtml
 
@@ -133,18 +126,16 @@ func (this *BaseRouter) Before() {
 	if this.Ctx.Req().Method == "GET" {
 		this.FormOnceCreate()
 	}
-
-	//TODO:
-	/*if app, ok := this.AppController.(NestPreparer); ok {
-		app.NestPrepare()
-	}*/
 }
 
 // on router finished
 func (this *BaseRouter) After() {
 	if this.TplNames != "" {
 		if !this.Ctx.Written() {
-			this.Render(this.TplNames, this.Data)
+			err := this.Render(this.TplNames, this.Data)
+			if err != nil {
+				this.Result = err
+			}
 		}
 	}
 }
@@ -250,38 +241,6 @@ func (this *BaseRouter) CheckLoginRedirect(args ...interface{}) bool {
 	return false
 }
 
-// read beego flash message
-func (this *BaseRouter) FlashRead(key string) (string, bool) {
-	if data, ok := this.Data["flash"].(map[string]string); ok {
-		value, ok := data[key]
-		return value, ok
-	}
-	return "", false
-}
-
-var (
-    FlashName = "WEGO_FLASH"
-	FlashSeperator = "WEGOFLASH"
-)
-
-func (this *BaseRouter) Store(data map[string]string) {
-	this.Data["flash"] = data
-	var flashValue string
-	for key, value := range data {
-		flashValue += "\x00" + key + "\x23" + FlashSeperator + "\x23" + value + "\x00"
-	}
-
-	auth.SetCookie(this.ResponseWriter, FlashName, url.QueryEscape(flashValue), 0, "/")
-}
-
-// write beego flash message
-func (this *BaseRouter) FlashWrite(key string, value string) {
-	data := map[string]string {
-		key : value,
-	}
-	this.Store(data)
-}
-
 // check flash redirect, ensure browser redirect to uri and display flash message.
 func (this *BaseRouter) CheckFlashRedirect(value string) (match bool, redirect bool) {
 	v := this.Session.Get("on_redirect")
@@ -346,6 +305,11 @@ func (this *BaseRouter) FlashRedirect(uri string, code int, flag string, args ..
 
 	this.FlashWrite(flag, flagVal)
 	this.Redirect(uri)
+}
+
+func (this *BaseRouter) FlashWrite(key, value string) {
+	this.Flash.Set(key, value)
+	this.Data["flash"] = this.Flash.Data()
 }
 
 // clear flash redirect
