@@ -102,7 +102,7 @@ func Init(t *tango.Tango) {
 	// /* Admin Routers */
 	t.Get("/admin", new(admin.AdminDashboard))
 
-	t.Get("/admin/model/get", new(admin.ModelGet))
+	t.Any("/admin/model/get", new(admin.ModelGet))
 	t.Post("/admin/model/select", new(admin.ModelSelect))
 
 	t.Get("/admin/user", new(admin.UserAdminList))

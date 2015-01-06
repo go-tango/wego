@@ -16,12 +16,18 @@ package admin
 
 import (
 	"github.com/astaxie/beego/orm"
+	"github.com/tango-contrib/xsrf"
 
 	"github.com/go-tango/wego/modules/models"
 )
 
 type ModelGet struct {
 	BaseAdminRouter
+	xsrf.NoCheck
+}
+
+func (this *ModelGet) Post() {
+	this.Get()
 }
 
 func (this *ModelGet) Get() {
@@ -59,6 +65,7 @@ func (this *ModelGet) Get() {
 
 type ModelSelect struct {
 	BaseAdminRouter
+	xsrf.NoCheck
 }
 
 func (this *ModelSelect) Post() {

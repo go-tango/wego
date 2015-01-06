@@ -31,7 +31,7 @@ type CommentAdminRouter struct {
 }
 
 func (this *CommentAdminRouter) Before() {
-	this.Params().Set(":model", "category")
+	this.Params().Set(":model", "comment")
 	this.ModelAdminRouter.Before()
 }
 

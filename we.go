@@ -67,6 +67,7 @@ func mergeFuncMap(funcs ...template.FuncMap) template.FuncMap{
 func initTango() *tango.Tango {
 	tg := tango.Classic(setting.Log)
 	tg.Use(
+		tango.Static("./static", "static", []string{"index.html", "index.htm"}),
 		tango.Static("./static_source", "static_source", []string{"index.html", "index.htm"}),
 		session.New(time.Duration(setting.SessionCookieLifeTime)),
 		renders.New(renders.Options{
@@ -75,6 +76,7 @@ func initTango() *tango.Tango {
 		}),
 	)
 	if setting.EnableXSRF {
+		println("cookie:", setting.SessionCookieLifeTime)
 		tg.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
 	}
 	tg.Use(flash.Flashes())
