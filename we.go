@@ -76,7 +76,6 @@ func initTango() *tango.Tango {
 		}),
 	)
 	if setting.EnableXSRF {
-		println("cookie:", setting.SessionCookieLifeTime)
 		tg.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
 	}
 	tg.Use(flash.Flashes())
@@ -96,11 +95,11 @@ func main() {
 	}
 	setting.Log.Info("start WeGo version", setting.APP_VER, setting.AppUrl)
 
-	//initialize the routers
-	routers.Init(t)
-
 	// init models
 	models.Init(setting.IsProMode)
+
+	//initialize the routers
+	routers.Init(t)
 
 	t.Run(setting.AppHost)
 }
