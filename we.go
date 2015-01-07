@@ -16,16 +16,16 @@
 package main
 
 import (
-	"time"
 	"html/template"
+	"time"
 
+	"github.com/go-tango/social-auth"
 	"github.com/lunny/tango"
-	"github.com/tango-contrib/session"
-	"github.com/tango-contrib/renders"
-	"github.com/tango-contrib/xsrf"
 	"github.com/tango-contrib/events"
 	"github.com/tango-contrib/flash"
-	"github.com/go-tango/social-auth"
+	"github.com/tango-contrib/renders"
+	"github.com/tango-contrib/session"
+	"github.com/tango-contrib/xsrf"
 
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
@@ -54,7 +54,7 @@ func initialize() {
 	SECRET_KEY = setting.QiniuSecurityKey
 }
 
-func mergeFuncMap(funcs ...template.FuncMap) template.FuncMap{
+func mergeFuncMap(funcs ...template.FuncMap) template.FuncMap {
 	var ret = make(template.FuncMap)
 	for _, fs := range funcs {
 		for k, f := range fs {
@@ -72,7 +72,7 @@ func initTango() *tango.Tango {
 		session.New(time.Duration(setting.SessionCookieLifeTime)),
 		renders.New(renders.Options{
 			Directory: setting.TemplatesPath,
-			Funcs: mergeFuncMap(utils.FuncMap(), setting.Funcs),
+			Funcs:     mergeFuncMap(utils.FuncMap(), setting.Funcs),
 		}),
 	)
 	if setting.EnableXSRF {
