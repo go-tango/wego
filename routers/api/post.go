@@ -4,10 +4,13 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/routers/base"
+
+	"github.com/tango-contrib/xsrf"
 )
 
 type Post struct {
 	base.BaseRouter
+	xsrf.NoCheck
 }
 
 func (this *Post) Post() {
