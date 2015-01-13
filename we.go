@@ -84,8 +84,7 @@ func initTango() *tango.Tango {
 	if setting.EnableXSRF {
 		tg.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
 	}
-	tg.Use(flash.Flashes())
-	tg.Use(events.Events())
+	tg.Use(flash.Flashes(), events.Events())
 	return tg
 }
 
