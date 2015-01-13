@@ -67,8 +67,14 @@ func mergeFuncMap(funcs ...template.FuncMap) template.FuncMap {
 func initTango() *tango.Tango {
 	tg := tango.Classic(setting.Log)
 	tg.Use(
-		tango.Static("./static", "static", []string{"index.html", "index.htm"}),
-		tango.Static("./static_source", "static_source", []string{"index.html", "index.htm"}),
+		tango.Static(tango.StaticOptions{
+			RootPath: "./static",
+			Prefix: "static",
+		}),
+		tango.Static(tango.StaticOptions{
+			RootPath: "./static_source", 
+			Prefix: "static_source",
+		}),
 		session.New(time.Duration(setting.SessionCookieLifeTime)),
 		renders.New(renders.Options{
 			Directory: setting.TemplatesPath,
