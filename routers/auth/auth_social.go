@@ -15,14 +15,14 @@
 package auth
 
 import (
-	"github.com/lunny/tango"
-	"github.com/tango-contrib/session"
+	"github.com/go-tango/social-auth"
 	"github.com/go-xweb/httpsession"
 	"github.com/lunny/log"
-	"github.com/go-tango/social-auth"
+	"github.com/lunny/tango"
+	"github.com/tango-contrib/session"
 
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/auth"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
 	"github.com/go-tango/wego/setting"
@@ -39,8 +39,8 @@ func (p *socialAuther) IsUserLogin(ctx *tango.Context, session *httpsession.Sess
 }
 
 func (p *socialAuther) LoginUser(ctx *tango.Context, session *httpsession.Session, uid int) (string, error) {
-	user := models.User{Id: uid}
-	if user.Read() == nil {
+	user := models.User{}
+	if err := models.GetById(int64(uid), &user); err == nil {
 		auth.LoginUser(&user, ctx, session, true)
 	}
 	return auth.GetLoginRedirect(ctx), nil
@@ -188,7 +188,7 @@ failed:
 	return
 
 connect:
-	if loginRedirect, _, err := setting.SocialAuth.ConnectAndLogin(this.Context, this.Session.Session, socialType, user.Id); err != nil {
+	if loginRedirect, _, err := setting.SocialAuth.ConnectAndLogin(this.Context, this.Session.Session, socialType, int(user.Id)); err != nil {
 		log.Error("ConnectAndLogin:", err)
 		goto failed
 	} else {

@@ -15,20 +15,20 @@
 package post
 
 import (
-	"github.com/astaxie/beego/validation"
 	"github.com/Unknwon/i18n"
+	"github.com/astaxie/beego/validation"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
 )
 
 type PostForm struct {
 	Lang     int            `form:"type(select);attr(rel,select2)"`
-	Topic    int            `form:"type(select);attr(rel,select2)" valid:"Required"`
+	Topic    int64          `form:"type(select);attr(rel,select2)" valid:"Required"`
 	Title    string         `form:"attr(autocomplete,off)" valid:"Required;MinSize(5);MaxSize(60)"`
 	Content  string         `form:"type(textarea)" valid:"Required;MinSize(10)"`
-	Category int            `form:"-"`
+	Category int64          `form:"-"`
 	Topics   []models.Topic `form:"-"`
 	Locale   i18n.Locale    `form:"-"`
 }
@@ -69,11 +69,11 @@ func (form *PostForm) Valid(v *validation.Validation) {
 
 func (form *PostForm) SavePost(post *models.Post, user *models.User) error {
 	utils.SetFormValues(form, post)
-	post.Category = &models.Category{Id: form.Category}
-	post.Topic = &models.Topic{Id: form.Topic}
-	post.User = user
-	post.LastReply = user
-	post.LastAuthor = user
+	post.CategoryId = form.Category
+	post.TopicId = form.Topic
+	post.UserId = user.Id
+	post.LastReplyId = user.Id
+	post.LastAuthorId = user.Id
 	post.CanEdit = true
 	post.ContentCache = utils.RenderMarkdown(form.Content)
 
@@ -85,8 +85,8 @@ func (form *PostForm) SavePost(post *models.Post, user *models.User) error {
 
 func (form *PostForm) SetFromPost(post *models.Post) {
 	utils.SetFormValues(post, form)
-	form.Category = post.Category.Id
-	form.Topic = post.Topic.Id
+	form.Category = post.CategoryId
+	form.Topic = post.TopicId
 }
 
 func (form *PostForm) UpdatePost(post *models.Post, user *models.User) error {
@@ -95,8 +95,8 @@ func (form *PostForm) UpdatePost(post *models.Post, user *models.User) error {
 		return nil
 	}
 	utils.SetFormValues(form, post)
-	post.Category.Id = form.Category
-	post.Topic.Id = form.Topic
+	post.CategoryId = form.Category
+	post.TopicId = form.Topic
 	for _, c := range changes {
 		if c == "Content" {
 			post.ContentCache = utils.RenderMarkdown(form.Content)
@@ -105,14 +105,14 @@ func (form *PostForm) UpdatePost(post *models.Post, user *models.User) error {
 	}
 
 	// update last edit author
-	if post.LastAuthor != nil && post.LastAuthor.Id != user.Id {
-		post.LastAuthor = user
+	if post.LastAuthorId != user.Id {
+		post.LastAuthorId = user.Id
 		changes = append(changes, "LastAuthor")
 	}
 
 	changes = append(changes, "Updated")
 
-	return post.Update(changes...)
+	return models.UpdateById(post.Id, post, models.Obj2Table(changes)...)
 }
 
 func (form *PostForm) Placeholders() map[string]string {
@@ -127,37 +127,34 @@ func (form *PostForm) Placeholders() map[string]string {
 type PostAdminForm struct {
 	PostForm   `form:"-"`
 	Create     bool   `form:"-"`
-	User       int    `form:"attr(rel,select2-admin-model);attr(data-model,User)" valid:"Required"`
+	User       int64  `form:"attr(rel,select2-admin-model);attr(data-model,User)" valid:"Required"`
 	Title      string `valid:"Required;MaxSize(60)"`
 	Content    string `form:"type(textarea,markdown)" valid:"Required"`
 	Browsers   int    ``
 	Replys     int    ``
 	Favorites  int    ``
-	LastReply  int    `form:"attr(rel,select2-admin-model);attr(data-model,User)" valid:""`
-	LastAuthor int    `form:"attr(rel,select2-admin-model);attr(data-model,User)" valid:""`
-	Topic      int    `form:"type(select);attr(rel,select2)" valid:"Required"`
+	LastReply  int64  `form:"attr(rel,select2-admin-model);attr(data-model,User)" valid:""`
+	LastAuthor int64  `form:"attr(rel,select2-admin-model);attr(data-model,User)" valid:""`
+	Topic      int64  `form:"type(select);attr(rel,select2)" valid:"Required"`
 	Lang       int    `form:"type(select);attr(rel,select2)"`
 	IsBest     bool   ``
 }
 
 func (form *PostAdminForm) Valid(v *validation.Validation) {
-	user := models.User{Id: form.User}
-	if user.Read() != nil {
+	var err error
+	if _, err = models.GetUserById(form.User); err != nil {
 		v.SetError("User", "admin.not_found_by_id")
 	}
 
-	user.Id = form.LastReply
-	if user.Read() != nil {
+	if _, err = models.GetUserById(form.LastReply); err != nil {
 		v.SetError("LastReply", "admin.not_found_by_id")
 	}
 
-	user.Id = form.LastAuthor
-	if user.Read() != nil {
+	if _, err = models.GetUserById(form.LastAuthor); err != nil {
 		v.SetError("LastReply", "admin.not_found_by_id")
 	}
 
-	topic := models.Topic{Id: form.Topic}
-	if topic.Read() != nil {
+	if _, err = models.GetTopicById(form.Topic); err != nil {
 		v.SetError("Topic", "admin.not_found_by_id")
 	}
 
@@ -169,52 +166,22 @@ func (form *PostAdminForm) Valid(v *validation.Validation) {
 func (form *PostAdminForm) SetFromPost(post *models.Post) {
 	utils.SetFormValues(post, form)
 
-	if post.User != nil {
-		form.User = post.User.Id
-	}
-
-	if post.LastReply != nil {
-		form.LastReply = post.LastReply.Id
-	}
-
-	if post.LastAuthor != nil {
-		form.LastAuthor = post.LastAuthor.Id
-	}
-
-	if post.Topic != nil {
-		form.Topic = post.Topic.Id
-	}
+	form.User = post.UserId
+	form.LastReply = post.LastReplyId
+	form.LastAuthor = post.LastAuthorId
+	form.Topic = post.TopicId
 }
 
 func (form *PostAdminForm) SetToPost(post *models.Post) {
 	utils.SetFormValues(form, post)
 
-	if post.User == nil {
-		post.User = &models.User{}
-	}
-	post.User.Id = form.User
-
-	if post.LastReply == nil {
-		post.LastReply = &models.User{}
-	}
-	post.LastReply.Id = form.LastReply
-
-	if post.LastAuthor == nil {
-		post.LastAuthor = &models.User{}
-	}
-	post.LastAuthor.Id = form.LastAuthor
-
-	if post.Topic == nil {
-		post.Topic = &models.Topic{}
-	}
-	post.Topic.Id = form.Topic
+	post.UserId = form.User
+	post.LastReplyId = form.LastReply
+	post.LastAuthorId = form.LastAuthor
+	post.TopicId = form.Topic
 	//get category
-	topic := &models.Topic{Id: form.Topic}
-	if err := topic.Read("Id"); err == nil {
-		if post.Category == nil {
-			post.Category = &models.Category{}
-		}
-		post.Category.Id = topic.Category.Id
+	if topic, err := models.GetTopicById(form.Topic); err == nil {
+		post.CategoryId = topic.CategoryId
 	}
 	post.ContentCache = utils.RenderMarkdown(post.Content)
 }
@@ -226,15 +193,15 @@ type CommentForm struct {
 func (form *CommentForm) SaveComment(comment *models.Comment, user *models.User, post *models.Post) error {
 	comment.Message = form.Message
 	comment.MessageCache = utils.RenderMarkdown(form.Message)
-	comment.User = user
-	comment.Post = post
-	if err := comment.Insert(); err == nil {
-		post.LastReply = user
-		post.Update("LastReply", "LastReplied")
+	comment.UserId = user.Id
+	comment.PostId = post.Id
+	if err := models.InsertComment(comment); err == nil {
+		post.LastReplyId = user.Id
+		models.UpdateById(post.Id, post, "last_reply_id", "last_replied")
 
-		cnt, _ := post.Comments().Filter("Id__lte", comment.Id).Count()
+		cnt, _ := models.CountCommentsLTEId(comment.Id)
 		comment.Floor = int(cnt)
-		return comment.Update("Floor")
+		return models.UpdateById(comment.Id, comment, "floor")
 	} else {
 		return err
 	}
@@ -250,13 +217,12 @@ type CommentAdminForm struct {
 }
 
 func (form *CommentAdminForm) Valid(v *validation.Validation) {
-	user := models.User{Id: form.User}
-	if user.Read() != nil {
+	var err error
+	if _, err = models.GetUserById(int64(form.User)); err != nil {
 		v.SetError("User", "admin.not_found_by_id")
 	}
 
-	post := models.Post{Id: form.Post}
-	if post.Read() != nil {
+	if _, err = models.GetPostById(int64(form.Post)); err != nil {
 		v.SetError("Post", "admin.not_found_by_id")
 	}
 }
@@ -264,27 +230,14 @@ func (form *CommentAdminForm) Valid(v *validation.Validation) {
 func (form *CommentAdminForm) SetFromComment(comment *models.Comment) {
 	utils.SetFormValues(comment, form)
 
-	if comment.User != nil {
-		form.User = comment.User.Id
-	}
-
-	if comment.Post != nil {
-		form.Post = comment.Post.Id
-	}
+	form.User = int(comment.UserId)
+	form.Post = int(comment.PostId)
 }
 
 func (form *CommentAdminForm) SetToComment(comment *models.Comment) {
 	utils.SetFormValues(form, comment)
 
-	if comment.User == nil {
-		comment.User = &models.User{}
-	}
-	comment.User.Id = form.User
-
-	if comment.Post == nil {
-		comment.Post = &models.Post{}
-	}
-	comment.Post.Id = form.Post
-
+	comment.UserId = int64(form.User)
+	comment.PostId = int64(form.Post)
 	comment.MessageCache = utils.RenderMarkdown(comment.Message)
 }

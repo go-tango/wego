@@ -18,7 +18,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/tango-contrib/xsrf"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 )
 
 type ModelGet struct {
@@ -31,13 +31,13 @@ func (this *ModelGet) Post() {
 }
 
 func (this *ModelGet) Get() {
-	id := this.GetString("id")
+	id, _ := this.GetInt("id")
 	model := this.GetString("model")
 	result := map[string]interface{}{
 		"success": false,
 	}
 
-	var data []orm.ParamsList
+	var data = make([][]interface{}, 0)
 
 	defer func() {
 		if len(data) > 0 {
@@ -48,18 +48,12 @@ func (this *ModelGet) Get() {
 		this.ServeJson(this.Data)
 	}()
 
-	var qs orm.QuerySeter
-
-	switch model {
-	case "User":
-		qs = models.Users()
-	}
-
-	qs = qs.Filter("Id", id).Limit(1)
-
-	switch model {
-	case "User":
-		qs.ValuesList(&data, "Id", "UserName")
+	if model == "User" {
+		models.Orm().Iterate(&models.User{Id: id}, func(idx int, bean interface{}) error {
+			user := bean.(*models.User)
+			data = append(data, []interface{}{user.Id, user.UserName})
+			return nil
+		})
 	}
 }
 
@@ -90,8 +84,12 @@ func (this *ModelSelect) Post() {
 		return
 	}
 
-	switch model {
-	case "User":
-		models.Users().Filter("UserName__icontains", search).Limit(10).ValuesList(&data, "Id", "UserName")
+	if model == "User" {
+		models.Orm().Limit(10).Where("user_name like ?", "%"+search+"%").
+			Iterate(&models.User{}, func(idx int, bean interface{}) error {
+			user := bean.(*models.User)
+			data = append(data, []interface{}{user.Id, user.UserName})
+			return nil
+		})
 	}
 }

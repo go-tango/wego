@@ -17,10 +17,9 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/lunny/log"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/post"
 	"github.com/go-tango/wego/modules/utils"
 )
@@ -39,10 +38,6 @@ func (this *CategoryAdminRouter) Object() interface{} {
 	return &this.object
 }
 
-func (this *CategoryAdminRouter) ObjectQs() orm.QuerySeter {
-	return models.Categories().RelatedSel()
-}
-
 type CategoryAdminList struct {
 	CategoryAdminRouter
 }
@@ -50,8 +45,9 @@ type CategoryAdminList struct {
 // view for list model data
 func (this *CategoryAdminList) Get() {
 	var cats []models.Category
-	qs := models.Categories().RelatedSel()
-	if err := this.SetObjects(qs, &cats); err != nil {
+	sess := models.Orm().NewSession()
+	defer sess.Close()
+	if err := this.SetObjects(sess, &cats); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)
 	}
@@ -67,24 +63,6 @@ func (this *CategoryAdminNew) Get() {
 	this.SetFormSets(&form)
 }
 
-// view for new object save
-func (this *CategoryAdminNew) Post() {
-	form := post.CategoryAdminForm{Create: true}
-	if this.ValidFormSets(&form) == false {
-		return
-	}
-
-	var cat models.Category
-	form.SetToCategory(&cat)
-	if err := cat.Insert(); err == nil {
-		this.FlashRedirect(fmt.Sprintf("/admin/category/%d", cat.Id), 302, "CreateSuccess")
-		return
-	} else {
-		log.Error(err)
-		this.Data["Error"] = err
-	}
-}
-
 type CategoryAdminEdit struct {
 	CategoryAdminRouter
 }
@@ -98,7 +76,7 @@ func (this *CategoryAdminEdit) Get() {
 
 // view for update object
 func (this *CategoryAdminEdit) Post() {
-	form := post.CategoryAdminForm{Id: this.object.Id}
+	form := post.CategoryAdminForm{Id: int(this.object.Id)}
 	if this.ValidFormSets(&form) == false {
 		return
 	}
@@ -111,7 +89,7 @@ func (this *CategoryAdminEdit) Post() {
 	// update changed fields only
 	if len(changes) > 0 {
 		form.SetToCategory(&this.object)
-		if err := this.object.Update(changes...); err == nil {
+		if err := models.UpdateById(this.object.Id, this.object, models.Obj2Table(changes)...); err == nil {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
@@ -133,14 +111,13 @@ func (this *CategoryAdminDelete) Post() {
 		return
 	}
 	// check whether there are topics under the category
-	qs := models.Topics().Filter("Category__Id", this.object.Id)
-	cnt, _ := qs.Count()
+	cnt, _ := models.CountTopicsByCategoryId(this.object.Id)
 	if cnt > 0 {
 		this.FlashRedirect("/admin/category", 302, "DeleteNotAllowed")
 		return
 	} else {
 		// delete object
-		if err := this.object.Delete(); err == nil {
+		if err := models.DeleteById(this.object.Id, this.object); err == nil {
 			this.FlashRedirect("/admin/category", 302, "DeleteSuccess")
 			return
 		} else {

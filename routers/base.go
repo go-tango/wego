@@ -37,7 +37,6 @@ func Init(t *tango.Tango) {
 		t.Get("/img/(.*)", attachment.Image)
 	}
 
-	t.Use(setting.Captcha)
 	// oauth support
 	t.Get("/login/(.*)/access", new(auth.OAuthAccess))
 	t.Get("/login/(.*)", new(auth.OAuthRedirect))
@@ -60,13 +59,15 @@ func Init(t *tango.Tango) {
 		t.Get("/search", new(post.SearchRouter))
 	}
 
-	t.Get("/user/:username/comments", new(auth.Comments))
-	t.Get("/user/:username/posts", new(auth.Posts))
-	t.Get("/user/:username/following", new(auth.Following))
-	t.Get("/user/:username/followers", new(auth.Followers))
-	t.Get("/user/:username/follow/topics", new(auth.FollowTopics))
-	t.Get("/user/:username/favorite/posts", new(auth.FavoritePosts))
-	t.Get("/user/:username", new(auth.Home))
+	t.Group("/user/:username", func(g *tango.Group) {
+		g.Get("/comments", new(auth.Comments))
+		g.Get("/posts", new(auth.Posts))
+		g.Get("/following", new(auth.Following))
+		g.Get("/followers", new(auth.Followers))
+		g.Get("/follow/topics", new(auth.FollowTopics))
+		g.Get("/favorite/posts", new(auth.FavoritePosts))
+		g.Get("", new(auth.Home))
+	})
 
 	t.Any("/login", new(auth.Login))
 	t.Get("/logout", new(auth.Logout))
@@ -92,53 +93,70 @@ func Init(t *tango.Tango) {
 		t.Post("/upload", new(attachment.UploadRouter))
 	}
 
-	//download
-
 	/* API Routers*/
-	t.Post("/api/user", new(api.Users))
-	t.Post("/api/md", new(api.Markdown))
-	t.Post("/api/post", new(api.Post))
+	t.Group("/api", func(g *tango.Group) {
+		g.Post("/user", new(api.Users))
+		g.Post("/md", new(api.Markdown))
+		g.Post("/post", new(api.Post))
+	})
 
 	// /* Admin Routers */
-	t.Get("/admin", new(admin.AdminDashboard))
+	t.Group("/admin", func(g *tango.Group) {
+		g.Get("", new(admin.AdminDashboard))
+		g.Group("/model", func(cg *tango.Group) {
+			cg.Any("/get", new(admin.ModelGet))
+			cg.Post("/select", new(admin.ModelSelect))
+		})
 
-	t.Any("/admin/model/get", new(admin.ModelGet))
-	t.Post("/admin/model/select", new(admin.ModelSelect))
+		g.Group("/user", func(cg *tango.Group) {
+			cg.Get("", new(admin.UserAdminList))
+			cg.Any("/new", new(admin.UserAdminNew))
+			cg.Any("/:id", new(admin.UserAdminEdit))
+			cg.Post("/:id/:action", new(admin.UserAdminDelete))
+		})
 
-	t.Get("/admin/user", new(admin.UserAdminList))
-	t.Any("/admin/user/new", new(admin.UserAdminNew))
-	t.Any("/admin/user/:id", new(admin.UserAdminEdit))
-	t.Post("/admin/user/:id/:action", new(admin.UserAdminDelete))
+		g.Group("/post", func(cg *tango.Group) {
+			cg.Get("", new(admin.PostAdminList))
+			cg.Any("/new", new(admin.PostAdminNew))
+			cg.Any("/:id", new(admin.PostAdminEdit))
+			cg.Post("/:id/:action", new(admin.PostAdminDelete))
+		})
 
-	t.Get("/admin/post", new(admin.PostAdminList))
-	t.Any("/admin/post/new", new(admin.PostAdminNew))
-	t.Any("/admin/post/:id", new(admin.PostAdminEdit))
-	t.Post("/admin/post/:id/:action", new(admin.PostAdminDelete))
+		g.Group("/comment", func(cg *tango.Group) {
+			cg.Get("", new(admin.CommentAdminList))
+			cg.Any("/new", new(admin.CommentAdminNew))
+			cg.Any("/:id", new(admin.CommentAdminEdit))
+			cg.Post("/:id/:action", new(admin.CommentAdminDelete))
+		})
 
-	t.Get("/admin/comment", new(admin.CommentAdminList))
-	t.Any("/admin/comment/new", new(admin.CommentAdminNew))
-	t.Any("/admin/comment/:id", new(admin.CommentAdminEdit))
-	t.Post("/admin/comment/:id/:action", new(admin.CommentAdminDelete))
+		g.Group("/topic", func(cg *tango.Group) {
+			cg.Get("", new(admin.TopicAdminList))
+			cg.Any("/new", new(admin.TopicAdminNew))
+			cg.Any("/:id", new(admin.TopicAdminEdit))
+			cg.Post("/:id/:action", new(admin.TopicAdminDelete))
+		})
 
-	t.Get("/admin/topic", new(admin.TopicAdminList))
-	t.Any("/admin/topic/new", new(admin.TopicAdminNew))
-	t.Any("/admin/topic/:id", new(admin.TopicAdminEdit))
-	t.Post("/admin/topic/:id/:action", new(admin.TopicAdminDelete))
+		g.Group("/category", func(cg *tango.Group) {
+			cg.Get("", new(admin.CategoryAdminList))
+			cg.Any("/new", new(admin.CategoryAdminNew))
+			cg.Any("/:id", new(admin.CategoryAdminEdit))
+			cg.Post("/:id/:action", new(admin.CategoryAdminDelete))
+		})
 
-	t.Get("/admin/category", new(admin.CategoryAdminList))
-	t.Any("/admin/category/new", new(admin.CategoryAdminNew))
-	t.Any("/admin/category/:id", new(admin.CategoryAdminEdit))
-	t.Post("/admin/category/:id/:action", new(admin.CategoryAdminDelete))
+		g.Group("/page", func(cg *tango.Group) {
+			cg.Get("", new(admin.PageAdminList))
+			cg.Any("/new", new(admin.PageAdminNew))
+			cg.Any("/:id", new(admin.PageAdminEdit))
+			cg.Post("/:id/:action", new(admin.PageAdminDelete))
+		})
 
-	t.Get("/admin/page", new(admin.PageAdminList))
-	t.Any("/admin/page/new", new(admin.PageAdminNew))
-	t.Any("/admin/page/:id", new(admin.PageAdminEdit))
-	t.Post("/admin/page/:id/:action", new(admin.PageAdminDelete))
-
-	t.Get("/admin/bulletin", new(admin.BulletinAdminList))
-	t.Any("/admin/bulletin/new", new(admin.BulletinAdminNew))
-	t.Any("/admin/bulletin/:id", new(admin.BulletinAdminEdit))
-	t.Post("/admin/bulletin/:id/:action", new(admin.BulletinAdminDelete))
+		g.Group("/bulletin", func(cg *tango.Group) {
+			cg.Get("", new(admin.BulletinAdminList))
+			cg.Any("/new", new(admin.BulletinAdminNew))
+			cg.Any("/:id", new(admin.BulletinAdminEdit))
+			cg.Post("/:id/:action", new(admin.BulletinAdminDelete))
+		})
+	})
 
 	t.Get("/:slug", new(page.Show))
 

@@ -15,7 +15,7 @@
 package mailer
 
 import (
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/setting"
 )
 

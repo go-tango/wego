@@ -15,9 +15,7 @@
 package auth
 
 import (
-	"github.com/astaxie/beego/orm"
-
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
 	"github.com/go-tango/wego/setting"
@@ -31,17 +29,21 @@ func (this *UserRouter) getUser(user *models.User) bool {
 	username := this.Params().Get(":username")
 	user.UserName = username
 
-	err := user.Read("UserName")
+	u, err := models.GetUserByName(username)
 	if err != nil {
 		this.NotFound()
 		return true
 	}
+	*user = *u
 
 	IsFollowed := false
 
 	if this.IsLogin {
 		if this.User.Id != user.Id {
-			IsFollowed = this.User.FollowingUsers().Filter("FollowUser", user.Id).Exist()
+			IsFollowed = models.IsExist(&models.Follow{
+				UserId:       this.User.Id,
+				FollowUserId: user.Id,
+			})
 		}
 	}
 
@@ -55,55 +57,49 @@ type Home struct {
 	UserRouter
 }
 
-func (this *Home) Get() {
+func (this *Home) Get() error {
 	this.Data["IsUserHomePage"] = true
 
 	var user models.User
 	if this.getUser(&user) {
-		return
+		return nil
 	}
 
 	//recent posts and comments
 	limit := 5
 
-	var posts []*models.Post
-	var comments []*models.Comment
-
-	user.RecentPosts().Limit(limit).RelatedSel().All(&posts)
-	user.RecentComments().Limit(limit).RelatedSel().All(&comments)
+	posts, _ := models.RecentPosts("recent", limit, 0)
+	comments, _ := models.RecentCommentsByUserId(user.Id, limit)
 
 	this.Data["TheUserPosts"] = posts
 	this.Data["TheUserComments"] = comments
 
 	//follow topics
-	var ftopics []*models.FollowTopic
 	var topics []*models.Topic
-	ftNums, _ := models.FollowTopics().Filter("User", &user.Id).Limit(8).OrderBy("-Created").RelatedSel("Topic").All(&ftopics, "Topic")
-	if ftNums > 0 {
-		topics = make([]*models.Topic, 0, ftNums)
+	ftopics, _ := models.FindFollowTopic(user.Id, 8)
+	if len(ftopics) > 0 {
+		topics = make([]*models.Topic, 0, len(ftopics))
 		for _, ft := range ftopics {
-			topics = append(topics, ft.Topic)
+			topics = append(topics, ft.Topic())
 		}
 	}
 	this.Data["TheUserFollowTopics"] = topics
-	this.Data["TheUserFollowTopicsMore"] = ftNums >= 8
+	this.Data["TheUserFollowTopicsMore"] = len(ftopics) >= 8
 
 	//favorite posts
-	var favPostIds orm.ParamsList
+	var favPostIds = make([]int64, 0)
 	var favPosts []models.Post
-	favNums, _ := user.FavoritePosts().Limit(8).OrderBy("-Created").ValuesFlat(&favPostIds, "Post")
-	if favNums > 0 {
-		qs := models.Posts().Filter("Id__in", favPostIds)
-		qs = qs.OrderBy("-Created").RelatedSel()
-		models.ListObjects(qs, &favPosts)
+	models.Orm().Limit(8).Desc("created").Iterate(new(models.FavoritePost), func(idx int, bean interface{}) error {
+		favPostIds = append(favPostIds, bean.(*models.FavoritePost).PostId)
+		return nil
+	})
+	if len(favPostIds) > 0 {
+		models.Orm().In("id", favPostIds).Desc("created").Find(&favPosts)
 	}
 	this.Data["TheUserFavoritePosts"] = favPosts
-	this.Data["TheUserFavoritePostsMore"] = favNums >= 8
+	this.Data["TheUserFavoritePostsMore"] = len(favPostIds) >= 8
 
-	err := this.Render("user/home.html", this.Data)
-	if err != nil {
-		this.Result = err
-	}
+	return this.Render("user/home.html", this.Data)
 }
 
 type Posts struct {
@@ -117,14 +113,11 @@ func (this *Posts) Get() {
 	}
 
 	limit := 20
-
-	qs := user.RecentPosts()
-	nums, _ := qs.Count()
-
+	nums, _ := models.Count(&models.Post{UserId: user.Id})
 	pager := this.SetPaginator(limit, nums)
 
-	var posts []*models.Post
-	qs.Limit(limit, pager.Offset()).RelatedSel().All(&posts)
+	var posts = make([]*models.Post, 0)
+	models.Find(limit, pager.Offset(), &posts)
 
 	this.Data["TheUserPosts"] = posts
 	this.Render("user/posts.html", this.Data)
@@ -141,14 +134,11 @@ func (this *Comments) Get() {
 	}
 
 	limit := 20
-
-	qs := user.RecentComments()
-	nums, _ := qs.Count()
-
+	nums, _ := models.CountCommentsByUserId(int64(user.Id))
 	pager := this.SetPaginator(limit, nums)
 
-	var comments []*models.Comment
-	qs.Limit(limit, pager.Offset()).RelatedSel().All(&comments)
+	var comments = make([]*models.Comment, 0)
+	models.Find(limit, pager.Offset(), &comments)
 
 	this.Data["TheUserComments"] = comments
 
@@ -156,29 +146,20 @@ func (this *Comments) Get() {
 }
 
 func (this *UserRouter) getFollows(user *models.User, following bool) []map[string]interface{} {
-	limit := 20
-
-	var qs orm.QuerySeter
-
+	var follow models.Follow
 	if following {
-		qs = user.FollowingUsers()
+		follow.UserId = user.Id
 	} else {
-		qs = user.FollowerUsers()
+		follow.FollowUserId = user.Id
 	}
 
-	nums, _ := qs.Count()
+	nums, _ := models.Count(&follow)
 
+	limit := 20
 	pager := this.SetPaginator(limit, nums)
 
-	qs = qs.Limit(limit, pager.Offset())
-
 	var follows []*models.Follow
-
-	if following {
-		qs.RelatedSel("FollowUser").All(&follows, "FollowUser")
-	} else {
-		qs.RelatedSel("User").All(&follows, "User")
-	}
+	models.Orm().Limit(limit, pager.Offset()).Find(&follows, &follow)
 
 	if len(follows) == 0 {
 		return nil
@@ -187,37 +168,33 @@ func (this *UserRouter) getFollows(user *models.User, following bool) []map[stri
 	ids := make([]int, 0, len(follows))
 	for _, follow := range follows {
 		if following {
-			ids = append(ids, follow.FollowUser.Id)
+			ids = append(ids, int(follow.FollowUserId))
 		} else {
-			ids = append(ids, follow.User.Id)
+			ids = append(ids, int(follow.UserId))
 		}
 	}
 
-	var eids orm.ParamsList
-	this.User.FollowingUsers().Filter("FollowUser__in", ids).ValuesFlat(&eids, "FollowUser__Id")
-
-	var fids map[int]bool
-	if len(eids) > 0 {
-		fids = make(map[int]bool)
-		for _, id := range eids {
-			tid, _ := utils.StrTo(utils.ToStr(id)).Int()
+	var fids = make(map[int]bool)
+	models.Orm().In("follow_user_id", ids).Iterate(&models.Follow{UserId: this.User.Id},
+		func(idx int, bean interface{}) error {
+			tid, _ := utils.StrTo(utils.ToStr(bean.(*models.Follow).Id)).Int()
 			if tid > 0 {
 				fids[tid] = true
 			}
-		}
-	}
+			return nil
+		})
 
 	users := make([]map[string]interface{}, 0, len(follows))
 	for _, follow := range follows {
 		IsFollowed := false
 		var u *models.User
 		if following {
-			u = follow.FollowUser
+			u = follow.FollowUser()
 		} else {
-			u = follow.User
+			u = follow.User()
 		}
 		if fids != nil {
-			IsFollowed = fids[u.Id]
+			IsFollowed = fids[int(u.Id)]
 		}
 		users = append(users, map[string]interface{}{
 			"User":       u,
@@ -272,13 +249,12 @@ func (this *FollowTopics) Get() {
 		return
 	}
 
-	var ftopics []*models.FollowTopic
 	var topics []*models.Topic
-	nums, _ := models.FollowTopics().Filter("User", &user.Id).OrderBy("-Created").RelatedSel("Topic").All(&ftopics, "Topic")
-	if nums > 0 {
-		topics = make([]*models.Topic, 0, nums)
+	ftopics, _ := models.FindFollowTopic(user.Id, 0)
+	if len(ftopics) > 0 {
+		topics = make([]*models.Topic, 0, len(ftopics))
 		for _, ft := range ftopics {
-			topics = append(topics, ft.Topic)
+			topics = append(topics, ft.Topic())
 		}
 	}
 	this.Data["TheUserFollowTopics"] = topics
@@ -296,15 +272,17 @@ func (this *FavoritePosts) Get() {
 		return
 	}
 
-	var postIds orm.ParamsList
+	var postIds = make([]int64, 0)
 	var posts []models.Post
-	nums, _ := user.FavoritePosts().OrderBy("-Created").ValuesFlat(&postIds, "Post")
-	if nums > 0 {
-		qs := models.Posts().Filter("Id__in", postIds)
-		cnt, _ := models.CountObjects(qs)
+	models.Orm().Desc("created").Iterate(&models.FavoritePost{UserId: user.Id},
+		func(idx int, bean interface{}) error {
+			postIds = append(postIds, bean.(*models.FavoritePost).PostId)
+			return nil
+		})
+	if len(postIds) > 0 {
+		cnt, _ := models.Orm().In("id", postIds).Count(models.Post{})
 		pager := this.SetPaginator(setting.PostCountPerPage, cnt)
-		qs = qs.OrderBy("-Created").Limit(setting.PostCountPerPage, pager.Offset()).RelatedSel()
-		models.ListObjects(qs, &posts)
+		models.Orm().Desc("created").Limit(setting.PostCountPerPage, pager.Offset()).Find(&posts)
 	}
 
 	this.Data["TheUserFavoritePosts"] = posts

@@ -17,10 +17,9 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/lunny/log"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/post"
 	"github.com/go-tango/wego/modules/utils"
 )
@@ -39,13 +38,9 @@ func (this *PostAdminRouter) Object() interface{} {
 	return &this.object
 }
 
-func (this *PostAdminRouter) ObjectQs() orm.QuerySeter {
-	return models.Posts().RelatedSel()
-}
-
 func (this *PostAdminRouter) GetForm(create bool) post.PostAdminForm {
 	form := post.PostAdminForm{Create: create}
-	post.ListTopics(&form.Topics)
+	models.FindTopics(&form.Topics)
 	return form
 }
 
@@ -56,8 +51,9 @@ type PostAdminList struct {
 // view for list model data
 func (this *PostAdminList) Get() {
 	var posts []models.Post
-	qs := models.Posts().RelatedSel()
-	if err := this.SetObjects(qs, &posts); err != nil {
+	sess := models.Orm().NewSession()
+	defer sess.Close()
+	if err := this.SetObjects(sess, &posts); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)
 	}
@@ -82,7 +78,7 @@ func (this *PostAdminNew) Post() {
 
 	var post models.Post
 	form.SetToPost(&post)
-	if err := post.Insert(); err == nil {
+	if err := models.Insert(&post); err == nil {
 		this.FlashRedirect(fmt.Sprintf("/admin/post/%d", post.Id), 302, "CreateSuccess")
 		return
 	} else {
@@ -119,7 +115,7 @@ func (this *PostAdminEdit) Post() {
 		//fix the bug of category not updated
 		changes = append(changes, "Category")
 		form.SetToPost(&this.object)
-		if err := this.object.Update(changes...); err == nil {
+		if err := models.UpdateById(this.object.Id, this.object, models.Obj2Table(changes)...); err == nil {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
@@ -142,7 +138,7 @@ func (this *PostAdminDelete) Get() {
 	}
 
 	// delete object
-	if err := this.object.Delete(); err == nil {
+	if err := models.DeleteById(this.object.Id, this.object); err == nil {
 		this.FlashRedirect("/admin/post", 302, "DeleteSuccess")
 		return
 	} else {

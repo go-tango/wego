@@ -18,7 +18,7 @@ type AdminDashboard struct {
 	BaseAdminRouter
 }
 
-func (this *AdminDashboard) Get() {
+func (this *AdminDashboard) Get() error {
 	this.Data["consoleAdmin"] = true
-	this.Render("admin/dashboard.html", this.Data)
+	return this.Render("admin/dashboard.html", this.Data)
 }

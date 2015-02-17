@@ -2,9 +2,6 @@ package attachment
 
 import (
 	"fmt"
-	"github.com/go-tango/wego/modules/models"
-	"github.com/go-tango/wego/modules/utils"
-	"github.com/qiniu/api/io"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -12,6 +9,10 @@ import (
 	goio "io"
 	"path/filepath"
 	"time"
+
+	"github.com/go-tango/wego/models"
+	"github.com/go-tango/wego/modules/utils"
+	"github.com/qiniu/api/io"
 )
 
 func SaveImageToQiniu(m *models.Image, r goio.ReadSeeker, mime string, filename string, created time.Time, bucketName string) error {
@@ -61,12 +62,12 @@ func SaveImageToQiniu(m *models.Image, r goio.ReadSeeker, mime string, filename 
 	m.Created = created
 
 	//save to database
-	if err := m.Insert(); err != nil || m.Id <= 0 {
+	if err := models.Insert(m); err != nil || m.Id <= 0 {
 		return err
 	}
 
 	m.Token = m.GetToken()
-	if err := m.Update(); err != nil {
+	if err := models.UpdateById(m.Id, m); err != nil {
 		return err
 	}
 

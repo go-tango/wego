@@ -21,9 +21,11 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/lunny/log"
 
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/auth"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
+	"github.com/go-xorm/xorm"
 )
 
 type BaseAdminRouter struct {
@@ -52,7 +54,6 @@ func (this *BaseAdminRouter) Before() {
 
 type ModelFinder interface {
 	Object() interface{}
-	ObjectQs() orm.QuerySeter
 }
 
 type ModelAdminRouter struct {
@@ -63,10 +64,9 @@ func (this *ModelAdminRouter) Before() {
 	this.BaseAdminRouter.Before()
 
 	// set TplNames for model
-	values := this.Ctx.Params()
 	var tplNames string
-	if model := values.Get(":model"); model != "" {
-		if id := values.Get(":id"); id != "" {
+	if model := this.Params().Get(":model"); model != "" {
+		if id := this.Params().Get(":id"); id != "" {
 			if this.QueryObject() == false {
 				return
 			}
@@ -93,14 +93,19 @@ func (this *ModelAdminRouter) Before() {
 }
 
 // query objects and set to template
-func (this *ModelAdminRouter) SetObjects(qs orm.QuerySeter, objects interface{}) error {
-	cnt, err := qs.Count()
+func (this *ModelAdminRouter) SetObjects(session *xorm.Session, objects interface{}) error {
+	var app ModelFinder
+	if a, ok := this.Ctx.Action().(ModelFinder); ok {
+		app = a
+	}
+
+	cnt, err := session.Count(app.Object())
 	if err != nil {
 		return err
 	}
 	// create paginator
 	p := this.SetPaginator(20, cnt)
-	if cnt, err := qs.Limit(p.PerPageNums, p.Offset()).RelatedSel().All(objects); err != nil {
+	if err := models.Find(p.PerPageNums, p.Offset(), objects); err != nil {
 		return err
 	} else {
 		this.Data["Objects"] = objects
@@ -125,10 +130,9 @@ func (this *ModelAdminRouter) QueryObject() bool {
 	}
 
 	object := app.Object()
-	qs := app.ObjectQs()
 
 	// query object
-	if err := qs.Filter("Id", id).Limit(1).One(object); err != nil {
+	if err := models.GetById(int64(id), object); err != nil {
 		this.NotFound()
 		if err != orm.ErrNoRows {
 			log.Error("SetObject: ", err)

@@ -19,21 +19,21 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/lunny/log"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
 )
 
+/*
 func ListPostsOfCategory(cat *models.Category, posts *[]models.Post) (int64, error) {
 	return models.Posts().Filter("Category", cat).RelatedSel().OrderBy("-Updated").All(posts)
 }
 
 func ListPostsOfTopic(topic *models.Topic, posts *[]models.Post) (int64, error) {
 	return models.Posts().Filter("Topic", topic).RelatedSel().OrderBy("-Updated").All(posts)
-}
+}*/
 
 var mentionRegexp = regexp.MustCompile(`\B@([\d\w-_]*)`)
 
@@ -52,7 +52,7 @@ func FilterMentions(user *models.User, content string) {
 	// }
 }
 
-func PostBrowsersAdd(uid int, ip string, post *models.Post) {
+func PostBrowsersAdd(uid int64, ip string, post *models.Post) {
 	var key string
 	if uid == 0 {
 		key = ip
@@ -63,22 +63,20 @@ func PostBrowsersAdd(uid int, ip string, post *models.Post) {
 	if setting.Cache.Get(key) != nil {
 		return
 	}
-	_, err := models.Posts().Filter("Id", post.Id).Update(orm.Params{
-		"Browsers": orm.ColValue(orm.Col_Add, 1),
-	})
-	if err != nil {
+
+	if err := models.UpdatePostBrowsersById(post.Id); err != nil {
 		log.Error("PostCounterAdd ", err)
 	}
 	setting.Cache.Put(key, true, 60)
 }
 
 func PostReplysCount(post *models.Post) {
-	cnt, err := post.Comments().Count()
+	cnt, err := models.CountCommentsByPostId(post.Id)
 	if err == nil {
 		post.Replys = int(cnt)
 		//disable post editable
 		post.CanEdit = false
-		err = post.Update("Replys", "CanEdit")
+		err = models.UpdateById(post.Id, post, "replys", "can_edit")
 	}
 	if err != nil {
 		log.Error("PostReplysCount ", err)
@@ -86,13 +84,12 @@ func PostReplysCount(post *models.Post) {
 }
 
 func FilterCommentMentions(fromUser *models.User, post *models.Post, comment *models.Comment) {
-	var toUser = post.User
 	var uri = fmt.Sprintf("post/%d", post.Id)
 	var lang = setting.DefaultLang
-	if fromUser.Id != toUser.Id {
+	if fromUser.Id != post.UserId {
 		var notification = models.Notification{
-			FromUser:     fromUser,
-			ToUser:       toUser,
+			FromUserId:   fromUser.Id,
+			ToUserId:     post.UserId,
 			Action:       setting.NOTICE_TYPE_COMMENT,
 			Title:        post.Title,
 			TargetId:     post.Id,
@@ -103,7 +100,7 @@ func FilterCommentMentions(fromUser *models.User, post *models.Post, comment *mo
 			ContentCache: comment.MessageCache,
 			Status:       setting.NOTICE_UNREAD,
 		}
-		if err := notification.Insert(); err == nil {
+		if err := models.InsertNotification(&notification); err == nil {
 			//pass
 		}
 	}
@@ -114,14 +111,12 @@ func FilterCommentMentions(fromUser *models.User, post *models.Post, comment *mo
 	userNames := r.FindAllString(comment.Message, -1)
 	for _, userName := range userNames {
 		bUserName := strings.TrimPrefix(strings.TrimSpace(userName), "@")
-		user := &models.User{
-			UserName: bUserName,
-		}
-		if err := user.Read("UserName"); err == nil {
-			if user.Id != 0 && user.Id != post.User.Id {
+
+		if user, err := models.GetUserByName(bUserName); err == nil {
+			if user.Id != 0 && user.Id != post.UserId {
 				notification := models.Notification{
-					FromUser:     fromUser,
-					ToUser:       user,
+					FromUserId:   fromUser.Id,
+					ToUserId:     user.Id,
 					Action:       setting.NOTICE_TYPE_COMMENT,
 					Title:        post.Title,
 					TargetId:     post.Id,
@@ -132,7 +127,7 @@ func FilterCommentMentions(fromUser *models.User, post *models.Post, comment *mo
 					ContentCache: comment.MessageCache,
 					Status:       setting.NOTICE_UNREAD,
 				}
-				if err := notification.Insert(); err == nil {
+				if err := models.InsertNotification(&notification); err == nil {
 					//pass
 				}
 			}

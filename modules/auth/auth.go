@@ -25,13 +25,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/Unknwon/i18n"
-	"github.com/lunny/tango"
+	"github.com/astaxie/beego/orm"
 	"github.com/go-xweb/httpsession"
 	"github.com/lunny/log"
+	"github.com/lunny/tango"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
 
@@ -111,20 +111,20 @@ func RegisterUser(user *models.User, username, email, password string, locale i1
 
 	//set default avatar
 	user.AvatarType = setting.AvatarTypeGravatar
-	return user.Insert()
+	return models.Insert(user)
 }
 
 // set a new password to user
 func SaveNewPassword(user *models.User, password string) error {
 	salt := models.GetUserSalt()
 	user.Password = fmt.Sprintf("%s$%s", salt, utils.EncodePassword(password, salt))
-	return user.Update("Password", "Rands", "Updated")
+	return models.UpdateUser(user, "password", "rands", "updated")
 }
 
 //set a new avatar type to user
 func SaveAvatarType(user *models.User, avatarType int) error {
 	user.AvatarType = avatarType
-	return user.Update("AvatarType", "Updated")
+	return models.UpdateUser(user, "avatar_type", "updated")
 }
 
 // get login redirect url from cookie
@@ -174,8 +174,8 @@ func LoginUserFromRememberCookie(user *models.User, ctx *tango.Context, session 
 		}
 	}()
 
-	user.UserName = userName
-	if err := user.Read("UserName"); err != nil {
+	var err error
+	if user, err = models.GetUserByName(userName); err != nil {
 		return false
 	}
 
@@ -210,9 +210,8 @@ func GetUserIdFromSession(sess *httpsession.Session) int {
 func GetUserFromSession(user *models.User, sess *httpsession.Session) bool {
 	id := GetUserIdFromSession(sess)
 	if id > 0 {
-		u := models.User{Id: id}
-		if u.Read() == nil {
-			*user = u
+		if u, err := models.GetUserById(int64(id)); err == nil {
+			*user = *u
 			return true
 		}
 	}
@@ -271,7 +270,8 @@ func getVerifyUser(user *models.User, code string) bool {
 	hexStr := code[utils.TimeLimitCodeLength:]
 	if b, err := hex.DecodeString(hexStr); err == nil {
 		user.UserName = string(b)
-		if user.Read("UserName") == nil {
+		if u, err := models.GetUserByName(string(b)); err == nil {
+			*user = *u
 			return true
 		}
 	}
@@ -402,7 +402,7 @@ func UploadUserAvatarToQiniu(r io.ReadSeeker, filename string, mime string, buck
 
 	//update user
 	user.AvatarKey = putRet.Key
-	if err := user.Update("AvatarKey", "Updated"); err != nil {
+	if err := models.UpdateUser(user, "avatar_key", "updated"); err != nil {
 		return err
 	}
 	return nil

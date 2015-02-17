@@ -2,11 +2,11 @@ package admin
 
 import (
 	"fmt"
-	"github.com/lunny/log"
-	"github.com/astaxie/beego/orm"
+
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/bulletin"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
+	"github.com/lunny/log"
 )
 
 type BulletinAdminRouter struct {
@@ -23,18 +23,14 @@ func (this *BulletinAdminRouter) Object() interface{} {
 	return &this.object
 }
 
-func (this *BaseAdminRouter) ObjectQs() orm.QuerySeter {
-	return models.Bulletins()
-}
-
 type BulletinAdminList struct {
 	BulletinAdminRouter
 }
 
 func (this *BulletinAdminList) Get() {
 	var bulletins []models.Bulletin
-	qs := models.Bulletins().OrderBy("Type")
-	if err := this.SetObjects(qs, &bulletins); err != nil {
+	sess := models.Orm().Asc("type")
+	if err := this.SetObjects(sess, &bulletins); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)
 	}
@@ -57,7 +53,7 @@ func (this *BulletinAdminNew) Post() {
 
 	var bulletin models.Bulletin
 	form.SetToBulletin(&bulletin)
-	if err := bulletin.Insert(); err == nil {
+	if err := models.InsertBulletin(&bulletin); err == nil {
 		this.FlashRedirect(fmt.Sprintf("/admin/bulletin/%d", bulletin.Id), 302, "CreateSuccess")
 		return
 	} else {
@@ -77,7 +73,7 @@ func (this *BulletinAdminEdit) Get() {
 }
 
 func (this *BulletinAdminEdit) Post() {
-	form := bulletin.BulletinAdminForm{Id: this.object.Id}
+	form := bulletin.BulletinAdminForm{Id: int(this.object.Id)}
 	if this.ValidFormSets(&form) == false {
 		return
 	}
@@ -90,7 +86,7 @@ func (this *BulletinAdminEdit) Post() {
 	// update changed fields only
 	if len(changes) > 0 {
 		form.SetToBulletin(&this.object)
-		if err := this.object.Update(changes...); err == nil {
+		if err := models.UpdateById(this.object.Id, this.object, models.Obj2Table(changes)...); err == nil {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
@@ -110,11 +106,10 @@ func (this *BulletinAdminDelete) Post() {
 	if this.FormOnceNotMatch() {
 		return
 	}
-	qs := models.Bulletins().Filter("Id", this.object.Id)
-	cnt, _ := qs.Count()
+	cnt, _ := models.Count(&models.Bulletin{Id: this.object.Id})
 	if cnt > 0 {
 		// delete object
-		if err := this.object.Delete(); err == nil {
+		if err := models.DeleteBulletinById(this.object.Id); err == nil {
 			this.FlashRedirect("/admin/bulletin", 302, "DeleteSuccess")
 			return
 		} else {

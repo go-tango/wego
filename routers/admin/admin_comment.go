@@ -18,9 +18,8 @@ import (
 	"fmt"
 
 	"github.com/lunny/log"
-	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/post"
 	"github.com/go-tango/wego/modules/utils"
 )
@@ -39,10 +38,6 @@ func (this *CommentAdminRouter) Object() interface{} {
 	return &this.object
 }
 
-func (this *CommentAdminRouter) ObjectQs() orm.QuerySeter {
-	return models.Comments().RelatedSel()
-}
-
 type CommentAdminList struct {
 	CommentAdminRouter
 }
@@ -50,8 +45,9 @@ type CommentAdminList struct {
 // view for list model data
 func (this *CommentAdminList) Get() {
 	var comments []models.Comment
-	qs := models.Comments().RelatedSel()
-	if err := this.SetObjects(qs, &comments); err != nil {
+	sess := models.Orm().NewSession()
+	defer sess.Close()
+	if err := this.SetObjects(sess, &comments); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)
 	}
@@ -76,7 +72,7 @@ func (this *CommentAdminNew) Post() {
 
 	var comment models.Comment
 	form.SetToComment(&comment)
-	if err := comment.Insert(); err == nil {
+	if err := models.Insert(&comment); err == nil {
 		this.FlashRedirect(fmt.Sprintf("/admin/comment/%d", comment.Id), 302, "CreateSuccess")
 		return
 	} else {
@@ -111,7 +107,7 @@ func (this *CommentAdminEdit) Post() {
 	// update changed fields only
 	if len(changes) > 0 {
 		form.SetToComment(&this.object)
-		if err := this.object.Update(changes...); err == nil {
+		if err := models.UpdateById(this.object.Id, this.object, models.Obj2Table(changes)...); err == nil {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
@@ -134,7 +130,7 @@ func (this *CommentAdminDelete) Post() {
 	}
 
 	// delete object
-	if err := this.object.Delete(); err == nil {
+	if err := models.DeleteById(this.object.Id, this.object); err == nil {
 		this.FlashRedirect("/admin/comment", 302, "DeleteSuccess")
 		return
 	} else {

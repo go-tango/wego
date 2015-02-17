@@ -17,7 +17,7 @@ package post
 import (
 	"github.com/astaxie/beego/validation"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
 )
 
@@ -35,7 +35,7 @@ type TopicAdminForm struct {
 
 func (form *TopicAdminForm) CategorySelectData() [][]string {
 	var cats []models.Category
-	ListCategories(&cats)
+	models.FindCategories(&cats)
 	data := make([][]string, 0, len(cats))
 	for _, cat := range cats {
 		data = append(data, []string{cat.Name, utils.ToStr(cat.Id)})
@@ -55,29 +55,23 @@ func (form *TopicAdminForm) Labels() map[string]string {
 }
 
 func (form *TopicAdminForm) Valid(v *validation.Validation) {
-	qs := models.Topics()
-
-	if models.CheckIsExist(qs, "Name", form.Name, form.Id) {
+	if models.IsExist(&models.Topic{Name: form.Name, Id: int64(form.Id)}) {
 		v.SetError("Name", "admin.field_need_unique")
 	}
 
-	if models.CheckIsExist(qs, "Slug", form.Slug, form.Id) {
+	if models.IsExist(&models.Topic{Slug: form.Slug, Id: int64(form.Id)}) {
 		v.SetError("Slug", "admin.field_need_unique")
 	}
 }
 
 func (form *TopicAdminForm) SetFromTopic(topic *models.Topic) {
 	utils.SetFormValues(topic, form)
-	form.Category = topic.Category.Id
+	form.Category = int(topic.CategoryId)
 }
 
 func (form *TopicAdminForm) SetToTopic(topic *models.Topic) {
 	utils.SetFormValues(form, topic, "Id")
-	if topic.Category != nil {
-		topic.Category.Id = form.Category
-	} else {
-		topic.Category = &models.Category{Id: form.Category}
-	}
+	topic.CategoryId = int64(form.Category)
 }
 
 type CategoryAdminForm struct {
@@ -97,13 +91,11 @@ func (form *CategoryAdminForm) Labels() map[string]string {
 }
 
 func (form *CategoryAdminForm) Valid(v *validation.Validation) {
-	qs := models.Categories()
-
-	if models.CheckIsExist(qs, "Name", form.Name, form.Id) {
+	if models.IsExist(&models.Category{Name: form.Name, Id: int64(form.Id)}) {
 		v.SetError("Name", "admin.field_need_unique")
 	}
 
-	if models.CheckIsExist(qs, "Slug", form.Slug, form.Id) {
+	if models.IsExist(&models.Category{Slug: form.Slug, Id: int64(form.Id)}) {
 		v.SetError("Slug", "admin.field_need_unique")
 	}
 }

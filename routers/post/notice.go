@@ -1,40 +1,33 @@
 package post
 
-import (
-	"github.com/go-tango/wego/modules/models"
-	"github.com/go-tango/wego/modules/post"
-	"github.com/go-tango/wego/routers/base"
-)
+import "github.com/go-tango/wego/models"
 
 type NoticeRouter struct {
-	base.BaseRouter
+	PostListRouter
 }
 
-func (this *NoticeRouter) Get() {
+func (this *NoticeRouter) Get() error {
 	this.Data["IsNotificationPage"] = true
 
 	if this.CheckLoginRedirect() {
-		return
+		return nil
 	}
 
-	var notifications []models.Notification
-	qs := models.Notifications(this.User.Id)
-
 	pers := 10
-	count, _ := models.CountObjects(qs)
+	count, _ := models.CountNotifications(int64(this.User.Id))
 	pager := this.SetPaginator(pers, count)
 
-	qs = qs.OrderBy("-Created").Limit(pers, pager.Offset()).RelatedSel()
+	notifications, err := models.FindNotificationsByUserId(int64(this.User.Id), pers, pager.Offset())
+	if err != nil {
+		return err
+	}
 
-	models.ListObjects(qs, &notifications)
 	this.Data["Notifications"] = notifications
 
 	var cats []models.Category
 	var topics []models.Topic
-	post.ListCategories(&cats)
-	this.Data["Categories"] = cats
-	post.ListTopics(&topics)
-	this.Data["Topics"] = topics
+	this.setCategories(&cats)
+	this.setTopics(&topics)
 
-	this.Render("post/notice.html", this.Data)
+	return this.Render("post/notice.html", this.Data)
 }

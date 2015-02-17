@@ -15,10 +15,8 @@
 package api
 
 import (
-	"github.com/astaxie/beego/orm"
-
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/auth"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
 )
@@ -47,15 +45,22 @@ func (this *Users) Post() {
 
 		switch action {
 		case "get-follows":
-			var data []orm.ParamsList
-			this.User.FollowingUsers().ValuesList(&data, "FollowUser__NickName", "FollowUser__UserName")
+			var data = make([][]interface{}, 0)
+			models.Orm().Iterate(&models.Follow{UserId: this.User.Id},
+				func(idx int, bean interface{}) error {
+					followUser := bean.(*models.Follow).FollowUser()
+					if followUser != nil {
+						data = append(data, []interface{}{followUser.NickName, followUser.UserName})
+					}
+					return nil
+				})
 			result["success"] = true
 			result["data"] = data
 
 		case "follow", "unfollow":
 			id, err := utils.StrTo(this.GetString("user")).Int()
-			if err == nil && id != this.User.Id {
-				fuser := models.User{Id: id}
+			if err == nil && id != int(this.User.Id) {
+				fuser := models.User{Id: int64(id)}
 				if action == "follow" {
 					auth.UserFollow(&this.User, &fuser)
 				} else {

@@ -1,8 +1,7 @@
 package bulletin
 
 import (
-	//"github.com/astaxie/beego/validation"
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
 )

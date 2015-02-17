@@ -17,10 +17,10 @@ package auth
 import (
 	"strings"
 
-	"github.com/astaxie/beego/validation"
 	"github.com/Unknwon/i18n"
+	"github.com/astaxie/beego/validation"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
 )
@@ -197,7 +197,7 @@ func (form *ProfileForm) SaveUserProfile(user *models.User) error {
 		}
 
 		utils.SetFormValues(form, user)
-		return user.Update(changes...)
+		return models.UpdateUser(user, changes...)
 	}
 	return nil
 }
@@ -331,13 +331,11 @@ func (form *UserAdminForm) LangSelectData() [][]string {
 }
 
 func (form *UserAdminForm) Valid(v *validation.Validation) {
-	qs := models.Users()
-
-	if models.CheckIsExist(qs, "UserName", form.UserName, form.Id) {
+	if exist, _ := models.IsUserExistByName(form.UserName, int64(form.Id)); exist {
 		v.SetError("UserName", "auth.username_already_taken")
 	}
 
-	if models.CheckIsExist(qs, "Email", form.Email, form.Id) {
+	if exist, _ := models.IsUserExistByEmail(form.Email, int64(form.Id)); exist {
 		v.SetError("Email", "auth.email_already_taken")
 	}
 

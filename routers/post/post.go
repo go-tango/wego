@@ -19,11 +19,11 @@ import (
 
 	"github.com/lunny/log"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/post"
+	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
 	"github.com/go-tango/wego/setting"
-	"github.com/go-tango/wego/modules/utils"
 )
 
 //Post List Router
@@ -33,71 +33,91 @@ type PostListRouter struct {
 
 //Get all the categories
 func (this *PostListRouter) setCategories(cats *[]models.Category) {
-	//@see modules/post/topic_util.go
-	post.ListCategories(cats)
+	models.FindCategories(cats)
 	this.Data["Categories"] = *cats
+}
+
+func (this *PostListRouter) setTopics(topics *[]models.Topic) {
+	models.FindTopics(topics)
+	this.Data["Topics"] = *topics
 }
 
 //Get all the topics of the category
 func (this *PostListRouter) setTopicsOfCategory(topics *[]models.Topic, category *models.Category) {
-	//@see modules/post/topic_util.go
-	post.ListTopicsOfCategory(topics, category)
+	models.FindTopicsByCategoryId(topics, category.Id)
 	this.Data["TopicsOfCategory"] = *topics
 }
 
 //Get new best posts
 func (this *PostListRouter) setNewBestPosts(posts *[]models.Post) {
-	qs := models.Posts()
-	qs = qs.Filter("IsBest", true).OrderBy("-Created").Limit(10)
-	models.ListObjects(qs, posts)
+	err := models.NewBestPostsByExample(posts, &models.Post{})
+	if err != nil {
+		this.Result = err
+		return
+	}
+
 	this.Data["NewBestPosts"] = posts
 }
 
 //Get new best posts by category
 func (this *PostListRouter) setNewBestPostsOfCategory(posts *[]models.Post, cat *models.Category) {
-	qs := models.Posts()
-	qs = qs.Filter("IsBest", true).Filter("Category__id", cat.Id).OrderBy("-Created").Limit(10)
-	models.ListObjects(qs, posts)
+	err := models.NewBestPostsByExample(posts, &models.Post{CategoryId: cat.Id})
+	if err != nil {
+		this.Result = err
+		return
+	}
+
 	this.Data["NewBestPosts"] = posts
 }
 
 //Get new best posts by topic
 func (this *PostListRouter) setNewBestPostsOfTopic(posts *[]models.Post, topic *models.Topic) {
-	qs := models.Posts()
-	qs = qs.Filter("IsBest", true).Filter("Topic__id", topic.Id).OrderBy("-Created").Limit(10)
-	models.ListObjects(qs, posts)
+	err := models.NewBestPostsByExample(posts, &models.Post{TopicId: topic.Id})
+	if err != nil {
+		this.Result = err
+		return
+	}
+
 	this.Data["NewBestPosts"] = posts
 }
 
 //Get most replys posts
 func (this *PostListRouter) setMostReplysPosts(posts *[]models.Post) {
-	qs := models.Posts()
-	qs = qs.Filter("Replys__gt", 0).OrderBy("-Created", "-Replys").Limit(10)
-	models.ListObjects(qs, posts)
+	err := models.MostReplysPostsByExample(posts, &models.Post{})
+	if err != nil {
+		this.Result = err
+		return
+	}
 	this.Data["MostReplysPosts"] = posts
 }
 
 //Get most replys posts of category
 func (this *PostListRouter) setMostReplysPostsOfCategory(posts *[]models.Post, cat *models.Category) {
-	qs := models.Posts()
-	qs = qs.Filter("Category__id", cat.Id).Filter("Replys__gt", 0).OrderBy("-Created", "-Replys").Limit(10)
-	models.ListObjects(qs, posts)
+	err := models.MostReplysPostsByExample(posts, &models.Post{CategoryId: cat.Id})
+	if err != nil {
+		this.Result = err
+		return
+	}
 	this.Data["MostReplysPosts"] = posts
 }
 
 //Get most replys post of topic
 func (this *PostListRouter) setMostReplysPostsOfTopic(posts *[]models.Post, topic *models.Topic) {
-	qs := models.Posts()
-	qs = qs.Filter("Topic__id", topic.Id).Filter("Replys__gt", 0).OrderBy("-Created", "-Replys").Limit(10)
-	models.ListObjects(qs, posts)
+	err := models.MostReplysPostsByExample(posts, &models.Post{TopicId: topic.Id})
+	if err != nil {
+		this.Result = err
+		return
+	}
 	this.Data["MostReplysPosts"] = posts
 }
 
 //Get sidebar bulletin information
 func (this *PostListRouter) setSidebarBuilletinInfo() {
-	var bulletins []models.Bulletin
-	qs := models.Bulletins().OrderBy("Created")
-	models.ListObjects(qs, &bulletins)
+	bulletins, err := models.FindBulletins()
+	if err != nil {
+		this.Result = err
+		return
+	}
 
 	var friendLinks []models.Bulletin
 	var newComers []models.Bulletin
@@ -129,13 +149,17 @@ type Home struct {
 
 func (h *Home) Get() error {
 	//get posts by Created datetime desc order
-	var posts []models.Post
-	qs := models.Posts()
-	cnt, _ := models.CountObjects(qs)
-	pager := h.SetPaginator(setting.PostCountPerPage, cnt)
-	qs = qs.OrderBy("-LastReplied").Limit(setting.PostCountPerPage, pager.Offset()).RelatedSel()
+	cnt, err := models.CountByExample(&models.Post{})
+	if err != nil {
+		return err
+	}
 
-	models.ListObjects(qs, &posts)
+	pager := h.SetPaginator(setting.PostCountPerPage, cnt)
+	posts, err := models.FindPosts(setting.PostCountPerPage, pager.Offset())
+	if err != nil {
+		return err
+	}
+
 	h.Data["Posts"] = posts
 
 	//top nav bar data
@@ -143,9 +167,11 @@ func (h *Home) Get() error {
 	h.setCategories(&cats)
 	h.Data["SortSlug"] = ""
 	h.Data["CategorySlug"] = "home"
+
 	//new best posts
 	var newBestPosts []models.Post
 	h.setNewBestPosts(&newBestPosts)
+
 	//most replys posts
 	var mostReplysPosts []models.Post
 	h.setMostReplysPosts(&mostReplysPosts)
@@ -158,25 +184,20 @@ type Navs struct {
 	PostListRouter
 }
 
-func (this *Navs) Get() {
+func (this *Navs) Get() error {
 	sortSlug := this.Params().Get(":sortSlug")
-	var posts []models.Post
-	qs := models.Posts()
-	cnt, _ := models.CountObjects(qs)
-	pager := this.SetPaginator(setting.PostCountPerPage, cnt)
-	switch sortSlug {
-	case "recent":
-		qs = qs.OrderBy("-Created")
-	case "hot":
-		qs = qs.OrderBy("-LastReplied")
-	case "cold":
-		qs = qs.Filter("Replys", 0).OrderBy("-Created")
-	default:
-		this.NotFound()
-		return
+
+	cnt, err := models.CountByExample(&models.Post{})
+	if err != nil {
+		return err
 	}
-	qs = qs.Limit(setting.PostCountPerPage, pager.Offset()).RelatedSel()
-	models.ListObjects(qs, &posts)
+
+	pager := this.SetPaginator(setting.PostCountPerPage, cnt)
+	posts, err := models.RecentPosts(sortSlug, setting.PostCountPerPage, pager.Offset())
+	if err != nil {
+		return err
+	}
+
 	this.Data["Posts"] = posts
 
 	//top nav bar data
@@ -191,7 +212,7 @@ func (this *Navs) Get() {
 	var mostReplysPosts []models.Post
 	this.setMostReplysPosts(&mostReplysPosts)
 	this.setSidebarBuilletinInfo()
-	this.Render("post/home.html", this.Data)
+	return this.Render("post/home.html", this.Data)
 }
 
 type Category struct {
@@ -199,89 +220,87 @@ type Category struct {
 }
 
 //Get the posts by category
-func (this *Category) Get() {
+func (this *Category) Get() error {
 	//check category slug
 	slug := this.Params().Get(":slug")
-	cat := models.Category{Slug: slug}
-	if err := cat.Read("Slug"); err != nil {
-		this.NotFound()
-		return
+	cat, err := models.GetCategoryBySlug(slug)
+	if err != nil {
+		return err
 	}
-	//get posts by category slug, order by Created desc
-	qs := models.Posts().Filter("Category", &cat)
-	cnt, _ := models.CountObjects(qs)
-	pager := this.SetPaginator(setting.PostCountPerPage, cnt)
-	qs = qs.OrderBy("-LastReplied").Limit(setting.PostCountPerPage, pager.Offset()).RelatedSel()
-	var posts []models.Post
-	models.ListObjects(qs, &posts)
 
-	this.Data["Category"] = &cat
+	//get posts by category slug, order by Created desc
+	cnt, err := models.CountByExample(&models.Post{CategoryId: cat.Id})
+	if err != nil {
+		return err
+	}
+
+	pager := this.SetPaginator(setting.PostCountPerPage, cnt)
+	posts, err := models.RecentPosts("hot", setting.PostCountPerPage, pager.Offset())
+	if err != nil {
+		return err
+	}
+
+	this.Data["Category"] = cat
 	this.Data["Posts"] = posts
 
 	//top nav bar data
 	var cats []models.Category
 	this.setCategories(&cats)
 	var topics []models.Topic
-	this.setTopicsOfCategory(&topics, &cat)
+	this.setTopicsOfCategory(&topics, cat)
 	this.Data["CategorySlug"] = cat.Slug
 	this.Data["SortSlug"] = ""
 	var newBestPosts []models.Post
-	this.setNewBestPostsOfCategory(&newBestPosts, &cat)
+	this.setNewBestPostsOfCategory(&newBestPosts, cat)
 	//most replys posts
 	var mostReplysPosts []models.Post
-	this.setMostReplysPostsOfCategory(&mostReplysPosts, &cat)
+	this.setMostReplysPostsOfCategory(&mostReplysPosts, cat)
 	this.setSidebarBuilletinInfo()
-	this.Render("post/home.html", this.Data)
+
+	return this.Render("post/home.html", this.Data)
 }
 
 type CateNavs struct {
 	PostListRouter
 }
 
-func (this *CateNavs) Get() {
+func (this *CateNavs) Get() error {
 	//check category slug and sort slug
 	catSlug := this.Params().Get(":catSlug")
 	sortSlug := this.Params().Get(":sortSlug")
-	cat := models.Category{Slug: catSlug}
-	if err := cat.Read("Slug"); err != nil {
-		this.NotFound()
-		return
+	cat, err := models.GetCategoryBySlug(catSlug)
+	if err != nil {
+		return err
 	}
-	qs := models.Posts().Filter("Category", &cat)
-	cnt, _ := models.CountObjects(qs)
-	pager := this.SetPaginator(setting.PostCountPerPage, cnt)
-	switch sortSlug {
-	case "recent":
-		qs = qs.OrderBy("-Created")
-	case "hot":
-		qs = qs.OrderBy("-LastReplied")
-	case "cold":
-		qs = qs.Filter("Replys", 0).OrderBy("-Created")
-	default:
-		this.NotFound()
-		return
-	}
-	qs = qs.Limit(setting.PostCountPerPage, pager.Offset()).RelatedSel()
-	var posts []models.Post
-	models.ListObjects(qs, &posts)
 
-	this.Data["Category"] = &cat
+	cnt, err := models.CountByExample(&models.Post{CategoryId: cat.Id})
+	if err != nil {
+		return err
+	}
+
+	pager := this.SetPaginator(setting.PostCountPerPage, cnt)
+	posts, err := models.RecentPosts(sortSlug, setting.PostCountPerPage, pager.Offset())
+	if err != nil {
+		return err
+	}
+
+	this.Data["Category"] = cat
 	this.Data["Posts"] = posts
 
 	//top nav bar data
 	var cats []models.Category
 	this.setCategories(&cats)
 	var topics []models.Topic
-	this.setTopicsOfCategory(&topics, &cat)
+	this.setTopicsOfCategory(&topics, cat)
 	this.Data["CategorySlug"] = cat.Slug
 	this.Data["SortSlug"] = sortSlug
 	var newBestPosts []models.Post
-	this.setNewBestPostsOfCategory(&newBestPosts, &cat)
+	this.setNewBestPostsOfCategory(&newBestPosts, cat)
 	//most replys posts
 	var mostReplysPosts []models.Post
-	this.setMostReplysPostsOfCategory(&mostReplysPosts, &cat)
+	this.setMostReplysPostsOfCategory(&mostReplysPosts, cat)
 	this.setSidebarBuilletinInfo()
-	this.Render("post/home.html", this.Data)
+	return this.Render("post/home.html", this.Data)
 }
 
 type Topic struct {
@@ -289,62 +308,64 @@ type Topic struct {
 }
 
 //Topic Home Page
-func (this *Topic) Get() {
+func (this *Topic) Get() error {
 	//check topic slug
 	slug := this.Params().Get(":slug")
-	topic := models.Topic{Slug: slug}
-	if err := topic.Read("Slug"); err != nil {
-		this.NotFound()
-		return
+	topic, err := models.GetTopicBySlug(slug)
+	if err != nil {
+		return err
 	}
+
 	//get topic category
-	category := models.Category{Id: topic.Category.Id}
-	if err := category.Read("Id"); err != nil {
-		this.NotFound()
-		return
+	var category models.Category
+	err = models.GetById(topic.CategoryId, &category)
+	if err != nil {
+		return err
 	}
 
 	//get posts by topic
-	qs := models.Posts().Filter("Topic", &topic)
-	cnt, _ := models.CountObjects(qs)
+	cnt, err := models.CountByExample(&models.Post{TopicId: topic.Id})
+	if err != nil {
+		return err
+	}
+
 	pager := this.SetPaginator(setting.PostCountPerPage, cnt)
-	qs = qs.OrderBy("-LastReplied").Limit(setting.PostCountPerPage, pager.Offset()).RelatedSel()
-	var posts []models.Post
-	models.ListObjects(qs, &posts)
+	posts, err := models.FindPosts(setting.PostCountPerPage, pager.Offset())
+	if err != nil {
+		return err
+	}
 
 	this.Data["Posts"] = posts
 	this.Data["Topic"] = &topic
 	this.Data["Category"] = &category
 
 	//check whether added it into favorite list
-	HasFavorite := false
+	var hasFavorite bool
 	if this.IsLogin {
-		HasFavorite = models.FollowTopics().Filter("User", &this.User).Filter("Topic", &topic).Exist()
+		hasFavorite, _ = models.HasUserFollowTopic(int64(this.User.Id), topic.Id)
 	}
-	this.Data["HasFavorite"] = HasFavorite
+	this.Data["HasFavorite"] = hasFavorite
 
 	//new best post
 	var newBestPosts []models.Post
-	this.setNewBestPostsOfTopic(&newBestPosts, &topic)
+	this.setNewBestPostsOfTopic(&newBestPosts, topic)
 	//most replys posts
 	var mostReplysPosts []models.Post
-	this.setMostReplysPostsOfTopic(&mostReplysPosts, &topic)
+	this.setMostReplysPostsOfTopic(&mostReplysPosts, topic)
 	this.setSidebarBuilletinInfo()
-	this.Render("post/topic.html", this.Data)
+	return this.Render("post/topic.html", this.Data)
 }
 
 // Add this topic into favorite list
 func (this *Topic) Post() {
 	slug := this.Params().Get(":slug")
-
-	topic := models.Topic{Slug: slug}
-	if err := topic.Read("Slug"); err != nil {
-		this.NotFound()
-		return
-	}
-
 	result := map[string]interface{}{
 		"success": false,
+	}
+
+	topic, err := models.GetTopicBySlug(slug)
+	if err != nil {
+		return
 	}
 
 	if this.IsAjax() {
@@ -352,15 +373,26 @@ func (this *Topic) Post() {
 		switch action {
 		case "favorite":
 			if this.IsLogin {
-				qs := models.FollowTopics().Filter("User", &this.User).Filter("Topic", &topic)
-				if qs.Exist() {
-					qs.Delete()
-				} else {
-					fav := models.FollowTopic{User: &this.User, Topic: &topic}
-					fav.Insert()
+				has, err := models.HasUserFollowTopic(int64(this.User.Id), topic.Id)
+				if err != nil {
+					log.Error("get follow user error:", err)
+					return
 				}
-				topic.RefreshFollowers()
-				this.User.RefreshFavTopics()
+
+				if has {
+					err = models.DeleteFollowTopic(int64(this.User.Id), topic.Id)
+				} else {
+					fav := models.FollowTopic{UserId: int64(this.User.Id), TopicId: topic.Id}
+					err = models.Insert(&fav)
+				}
+
+				if err != nil {
+					return
+				}
+
+				//TODO: add back
+				//topic.RefreshFollowers()
+				//this.User.RefreshFavTopics()
 				result["success"] = true
 			}
 		}
@@ -374,41 +406,52 @@ type NewPost struct {
 	base.BaseRouter
 }
 
-func (this *NewPost) Get() {
+func (this *NewPost) Get() error {
 	if this.CheckActiveRedirect() {
-		return
+		return nil
 	}
 
 	form := post.PostForm{Locale: this.Locale}
 	topicSlug := this.GetString("topic")
 	if len(topicSlug) > 0 {
-		topic := models.Topic{Slug: topicSlug}
-		err := topic.Read("Slug")
-		if err == nil {
-			form.Topic = topic.Id
-			form.Category = topic.Category.Id
-			post.ListTopicsOfCategory(&form.Topics, &models.Category{Id: form.Category})
-			this.Data["Topic"] = &topic
-		} else {
+		topic, err := models.GetTopicBySlug(topicSlug)
+		if err != nil {
 			this.Redirect(setting.AppUrl)
-			return
+			return nil
 		}
+
+		form.Topic = topic.Id
+		form.Category = topic.CategoryId
+
+		err = models.FindTopicsByCategoryId(&form.Topics, topic.CategoryId)
+		if err != nil {
+			this.Redirect(setting.AppUrl)
+			return nil
+		}
+
+		this.Data["Topic"] = topic
 	} else {
 		catSlug := this.GetString("category")
 		if len(catSlug) > 0 {
-			category := models.Category{Slug: catSlug}
-			category.Read("Slug")
+			category, err := models.GetCategoryBySlug(catSlug)
+			if err != nil {
+				return err
+			}
+
 			form.Category = category.Id
-			post.ListTopicsOfCategory(&form.Topics, &category)
-			this.Data["Category"] = &category
+			err = models.FindTopicsByCategoryId(&form.Topics, category.Id)
+			if err != nil {
+				return err
+			}
+			this.Data["Category"] = category
 		} else {
 			this.Redirect(setting.AppUrl)
-			return
+			return nil
 		}
 	}
 
 	this.SetFormSets(&form)
-	this.Render("post/new.html", this.Data)
+	return this.Render("post/new.html", this.Data)
 }
 
 func (this *NewPost) Post() {
@@ -419,24 +462,22 @@ func (this *NewPost) Post() {
 	form := post.PostForm{Locale: this.Locale}
 	topicSlug := this.GetString("topic")
 	if len(topicSlug) > 0 {
-		topic := models.Topic{Slug: topicSlug}
-		err := topic.Read("Slug")
+		topic, err := models.GetTopicBySlug(topicSlug)
 		if err == nil {
-			form.Category = topic.Category.Id
+			form.Category = topic.CategoryId
 			form.Topic = topic.Id
-			this.Data["Topic"] = &topic
+			this.Data["Topic"] = topic
 		} else {
 			log.Error("Can not find topic by slug:", topicSlug)
 		}
 	} else {
 		topicId, err := this.GetInt("Topic")
 		if err == nil {
-			topic := models.Topic{Id: int(topicId)}
-			err = topic.Read("Id")
+			topic, err := models.GetTopicById(topicId)
 			if err == nil {
-				form.Category = topic.Category.Id
+				form.Category = topic.CategoryId
 				form.Topic = topic.Id
-				this.Data["Topic"] = &topic
+				this.Data["Topic"] = topic
 			} else {
 				log.Error("Can not find topic by id:", topicId)
 			}
@@ -446,11 +487,13 @@ func (this *NewPost) Post() {
 	}
 	if categorySlug := this.GetString("category"); categorySlug != "" {
 		log.Debug("Find category slug:", categorySlug)
-		category := models.Category{Slug: categorySlug}
-		category.Read("Slug")
+		category, err := models.GetCategoryBySlug(categorySlug)
+		if err != nil {
+			log.Error("Get category error", err)
+		}
 		this.Data["Category"] = &category
 	}
-	post.ListTopics(&form.Topics)
+	models.FindTopics(&form.Topics)
 	if !this.ValidFormSets(&form) {
 		return
 	}
@@ -473,11 +516,15 @@ func (this *PostRouter) loadPost(post *models.Post, user *models.User) bool {
 	postId := this.Params().Get(":post")
 	id, _ := strconv.ParseInt(postId, 10, 64)
 	if id > 0 {
-		qs := models.Posts().Filter("Id", id)
+		var userId int64
 		if user != nil {
-			qs = qs.Filter("User", user.Id)
+			userId = user.Id
 		}
-		qs.RelatedSel(1).One(post)
+		err := models.GetPost(id, userId, post)
+		if err != nil {
+			log.Error("loadPost error:", err)
+			return true
+		}
 	}
 
 	if post.Id == 0 {
@@ -491,10 +538,12 @@ func (this *PostRouter) loadPost(post *models.Post, user *models.User) bool {
 }
 
 func (this *PostRouter) loadComments(post *models.Post, comments *[]*models.Comment) {
-	qs := post.Comments()
-	if num, err := qs.RelatedSel("User").OrderBy("Id").All(comments); err == nil {
+	err := models.GetCommentsByPostId(comments, post.Id)
+	if err == nil {
 		this.Data["Comments"] = *comments
-		this.Data["CommentsNum"] = num
+		this.Data["CommentsNum"] = len(*comments)
+	} else {
+		log.Error("loadComments error:", err)
 	}
 }
 
@@ -503,10 +552,10 @@ type SinglePost struct {
 }
 
 //Post Page
-func (this *SinglePost) Get() {
+func (this *SinglePost) Get() error {
 	var postMd models.Post
 	if this.loadPost(&postMd, nil) {
-		return
+		return nil
 	}
 
 	var comments []*models.Comment
@@ -518,18 +567,15 @@ func (this *SinglePost) Get() {
 	}
 
 	//check whether this post is favorited
-	num, _ := this.User.FavoritePosts().Filter("Post__Id", postMd.Id).Filter("IsFav", true).Count()
-	if num != 0 {
-		this.Data["IsPostFav"] = true
-	} else {
-		this.Data["IsPostFav"] = false
-	}
+	isPostFav, _ := models.IsPostFavorite(postMd.Id, int64(this.User.Id))
+	this.Data["IsPostFav"] = isPostFav
 
 	form := post.CommentForm{}
 	this.SetFormSets(&form)
 	//increment PageViewCount
+
 	post.PostBrowsersAdd(this.User.Id, utils.IP(this.Req()), &postMd)
-	this.Render("post/post.html", this.Data)
+	return this.Render("post/post.html", this.Data)
 }
 
 //New Comment
@@ -589,7 +635,7 @@ func (this *EditPost) Get() {
 	}
 	form := post.PostForm{}
 	form.SetFromPost(&postMd)
-	post.ListTopics(&form.Topics)
+	models.FindTopics(&form.Topics)
 	this.SetFormSets(&form)
 	this.Render("post/edit.html", this.Data)
 }
@@ -610,7 +656,7 @@ func (this *PostRouter) Post() {
 
 	form := post.PostForm{}
 	form.SetFromPost(&postMd)
-	post.ListTopics(&form.Topics)
+	models.FindTopics(&form.Topics)
 	if !this.ValidFormSets(&form) {
 		return
 	}
@@ -618,6 +664,7 @@ func (this *PostRouter) Post() {
 	if err := form.UpdatePost(&postMd, &this.User); err == nil {
 		this.JsStorage("deleteKey", "post/edit")
 		this.Redirect(postMd.Link())
+		return
 	}
 	this.Render("post/edit.html", this.Data)
 }

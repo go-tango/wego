@@ -24,11 +24,11 @@ import (
 	"github.com/lunny/log"
 	"github.com/lunny/tango"
 
-	"github.com/go-tango/wego/setting"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/attachment"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
+	"github.com/go-tango/wego/setting"
 )
 
 type QiniuUploadRouter struct {
@@ -60,7 +60,7 @@ func (this *QiniuUploadRouter) Post() {
 	t := time.Now()
 
 	image := models.Image{}
-	image.User = &this.User
+	image.UserId = this.User.Id
 
 	// get mime type
 	mime := handler.Header.Get("Content-Type")
@@ -95,7 +95,7 @@ func QiniuImage(ctx *tango.Context) {
 	var image = models.Image{
 		Token: imageKey,
 	}
-	err := image.Read("Token")
+	err := models.GetByExample(&image)
 	if err != nil {
 		return
 	}

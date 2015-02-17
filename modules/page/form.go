@@ -17,7 +17,7 @@ package page
 import (
 	"github.com/astaxie/beego/validation"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
 )
 
@@ -32,8 +32,7 @@ type PageAdminForm struct {
 }
 
 func (form *PageAdminForm) Valid(v *validation.Validation) {
-	user := models.User{Id: form.User}
-	if user.Read() != nil {
+	if models.IsExist(&models.User{Id: int64(form.User)}) {
 		v.SetError("User", "admin.not_found_by_id")
 	}
 }
@@ -41,27 +40,15 @@ func (form *PageAdminForm) Valid(v *validation.Validation) {
 func (form *PageAdminForm) SetFromPage(page *models.Page) {
 	utils.SetFormValues(page, form)
 
-	if page.User != nil {
-		form.User = page.User.Id
-	}
-
-	if page.LastAuthor != nil {
-		form.LastAuthor = page.LastAuthor.Id
-	}
+	form.User = int(page.UserId)
+	form.LastAuthor = int(page.LastAuthorId)
 }
 
 func (form *PageAdminForm) SetToPage(page *models.Page) {
 	utils.SetFormValues(form, page)
 
-	if page.User == nil {
-		page.User = &models.User{}
-	}
-	page.User.Id = form.User
-
-	if page.LastAuthor == nil {
-		page.LastAuthor = &models.User{}
-	}
-	page.LastAuthor.Id = form.LastAuthor
+	page.UserId = int64(form.User)
+	page.LastAuthorId = int64(form.LastAuthor)
 
 	page.ContentCache = utils.RenderMarkdown(page.Content)
 }

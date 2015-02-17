@@ -18,9 +18,8 @@ import (
 	"fmt"
 
 	"github.com/lunny/log"
-	"github.com/astaxie/beego/orm"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/page"
 	"github.com/go-tango/wego/modules/utils"
 )
@@ -39,10 +38,6 @@ func (this *PageAdminRouter) Object() interface{} {
 	return &this.object
 }
 
-func (this *PageAdminRouter) ObjectQs() orm.QuerySeter {
-	return models.Pages().RelatedSel()
-}
-
 type PageAdminList struct {
 	PageAdminRouter
 }
@@ -50,8 +45,9 @@ type PageAdminList struct {
 // view for list model data
 func (this *PageAdminList) Get() {
 	var pages []models.Page
-	qs := models.Pages().RelatedSel()
-	if err := this.SetObjects(qs, &pages); err != nil {
+	sess := models.Orm().NewSession()
+	defer sess.Close()
+	if err := this.SetObjects(sess, &pages); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)
 	}
@@ -76,7 +72,7 @@ func (this *PageAdminNew) Post() {
 
 	var a models.Page
 	form.SetToPage(&a)
-	if err := a.Insert(); err == nil {
+	if err := models.Insert(&a); err == nil {
 		this.FlashRedirect(fmt.Sprintf("/admin/page/%d", a.Id), 302, "CreateSuccess")
 		return
 	} else {
@@ -111,7 +107,7 @@ func (this *PageAdminEdit) Post() {
 	// update changed fields only
 	if len(changes) > 0 {
 		form.SetToPage(&this.object)
-		if err := this.object.Update(changes...); err == nil {
+		if err := models.UpdateById(this.object.Id, this.object, models.Obj2Table(changes)...); err == nil {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
@@ -134,7 +130,7 @@ func (this *PageAdminDelete) Post() {
 	}
 
 	// delete object
-	if err := this.object.Delete(); err == nil {
+	if err := models.DeleteById(this.object.Id, this.object); err == nil {
 		this.FlashRedirect("/admin/page", 302, "DeleteSuccess")
 		return
 	} else {

@@ -19,8 +19,8 @@ import (
 
 	"github.com/lunny/log"
 
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/auth"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers/base"
 	"github.com/go-tango/wego/setting"
@@ -208,7 +208,7 @@ func (this *RegisterActive) Get() {
 	if auth.VerifyUserActiveCode(&user, code) {
 		user.IsActive = true
 		user.Rands = models.GetUserSalt()
-		if err := user.Update("IsActive", "Rands", "Updated"); err != nil {
+		if err := models.UpdateById(user.Id, user, models.Obj2Table([]string{"IsActive", "Rands", "Updated"})...); err != nil {
 			log.Error("Active: user Update ", err)
 		}
 		if this.IsLogin {

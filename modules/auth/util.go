@@ -15,19 +15,17 @@
 package auth
 
 import (
-	"net/http"
 	"bytes"
-	"fmt"
-	"strings"
-	"encoding/base64"
-	"crypto/sha1"
-	"strconv"
-	"time"
 	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/base64"
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
-	"github.com/astaxie/beego/orm"
-
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 )
 
 func GetSecureCookie(req *http.Request, Secret, key string) (string, bool) {
@@ -166,46 +164,45 @@ func GetCookie(req *http.Request, key string) string {
 }
 
 func UserFollow(user *models.User, theUser *models.User) {
-	if theUser.Read() == nil {
+	if err := models.GetById(theUser.Id, theUser); err != nil {
 		var mutual bool
-		tFollow := models.Follow{User: theUser, FollowUser: user}
-		if err := tFollow.Read("User", "FollowUser"); err == nil {
+		tFollow := models.Follow{UserId: theUser.Id, FollowUserId: user.Id}
+		if err := models.GetByExample(&tFollow); err == nil {
 			mutual = true
 		}
 
-		follow := models.Follow{User: user, FollowUser: theUser, Mutual: mutual}
-		if err := follow.Insert(); err == nil && mutual {
+		follow := models.Follow{UserId: user.Id, FollowUserId: theUser.Id, Mutual: mutual}
+		if err := models.Insert(&follow); err == nil && mutual {
 			tFollow.Mutual = mutual
-			tFollow.Update("Mutual")
+			models.UpdateById(tFollow.Id, &tFollow, "mutual")
 		}
 
-		if nums, err := user.FollowingUsers().Count(); err == nil {
+		if nums, err := models.Count(&models.Follow{UserId: user.Id}); err == nil {
 			user.Following = int(nums)
-			user.Update("Following")
+			models.UpdateById(user.Id, user, "following")
 		}
 
-		if nums, err := theUser.FollowerUsers().Count(); err == nil {
+		if nums, err := models.Count(&models.Follow{FollowUserId: theUser.Id}); err == nil {
 			theUser.Followers = int(nums)
-			theUser.Update("Followers")
+			models.UpdateById(theUser.Id, theUser, "followers")
 		}
 	}
 }
 
 func UserUnFollow(user *models.User, theUser *models.User) {
-	num, _ := user.FollowingUsers().Filter("FollowUser", theUser.Id).Delete()
+	follow := &models.Follow{UserId: user.Id, FollowUserId: theUser.Id}
+	num, _ := models.Orm().Delete(follow)
 	if num > 0 {
-		theUser.FollowingUsers().Filter("FollowUser", user.Id).Update(orm.Params{
-			"Mutual": false,
-		})
+		models.Orm().UseBool().Update(&models.Follow{}, follow)
 
-		if nums, err := user.FollowingUsers().Count(); err == nil {
+		if nums, err := models.Count(&models.Follow{UserId: user.Id}); err == nil {
 			user.Following = int(nums)
-			user.Update("Following")
+			models.UpdateById(user.Id, user, "following")
 		}
 
-		if nums, err := theUser.FollowerUsers().Count(); err == nil {
+		if nums, err := models.Count(&models.Follow{FollowUserId: theUser.Id}); err == nil {
 			theUser.Followers = int(nums)
-			theUser.Update("Followers")
+			models.UpdateById(theUser.Id, theUser, "followers")
 		}
 	}
 }

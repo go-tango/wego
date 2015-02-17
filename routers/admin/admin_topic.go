@@ -17,10 +17,9 @@ package admin
 import (
 	"fmt"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/lunny/log"
 
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/post"
 	"github.com/go-tango/wego/modules/utils"
 )
@@ -39,10 +38,6 @@ func (this *TopicAdminRouter) Object() interface{} {
 	return &this.object
 }
 
-func (this *TopicAdminRouter) ObjectQs() orm.QuerySeter {
-	return models.Topics().RelatedSel()
-}
-
 type TopicAdminList struct {
 	TopicAdminRouter
 }
@@ -50,8 +45,8 @@ type TopicAdminList struct {
 // view for list model data
 func (this *TopicAdminList) Get() {
 	var topics []models.Topic
-	qs := models.Topics().OrderBy("-Category__id").RelatedSel()
-	if err := this.SetObjects(qs, &topics); err != nil {
+	sess := models.Orm().Desc("category_id")
+	if err := this.SetObjects(sess, &topics); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)
 	}
@@ -76,7 +71,7 @@ func (this *TopicAdminNew) Post() {
 
 	var topic models.Topic
 	form.SetToTopic(&topic)
-	if err := topic.Insert(); err == nil {
+	if err := models.Insert(&topic); err == nil {
 		this.FlashRedirect(fmt.Sprintf("/admin/topic/%d", topic.Id), 302, "CreateSuccess")
 		return
 	} else {
@@ -98,7 +93,7 @@ func (this *TopicAdminEdit) Get() {
 
 // view for update object
 func (this *TopicAdminEdit) Post() {
-	form := post.TopicAdminForm{Id: this.object.Id}
+	form := post.TopicAdminForm{Id: int(this.object.Id)}
 	if this.ValidFormSets(&form) == false {
 		return
 	}
@@ -111,7 +106,7 @@ func (this *TopicAdminEdit) Post() {
 	// update changed fields only
 	if len(changes) > 0 {
 		form.SetToTopic(&this.object)
-		if err := this.object.Update(changes...); err == nil {
+		if err := models.UpdateById(this.object.Id, this.object, models.Obj2Table(changes)...); err == nil {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
@@ -133,14 +128,13 @@ func (this *TopicAdminDelete) Post() {
 		return
 	}
 	//check whether there are posts under this topic
-	qs := models.Posts().Filter("Topic__id", this.object.Id)
-	cnt, _ := qs.Count()
+	cnt, _ := models.Count(&models.Post{TopicId: this.object.Id})
 	if cnt > 0 {
 		this.FlashRedirect("/admin/topic", 302, "DeleteNotAllowed")
 		return
 	} else {
 		// delete object
-		if err := this.object.Delete(); err == nil {
+		if err := models.DeleteById(this.object.Id, this.object); err == nil {
 			this.FlashRedirect("/admin/topic", 302, "DeleteSuccess")
 			return
 		} else {

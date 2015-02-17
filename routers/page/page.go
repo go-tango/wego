@@ -15,7 +15,7 @@
 package page
 
 import (
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/routers/base"
 )
 
@@ -25,7 +25,8 @@ type Show struct {
 
 func (this *Show) loadPage(page *models.Page) bool {
 	uri := this.Ctx.Req().RequestURI
-	err := models.Pages().RelatedSel("User").Filter("IsPublish", true).Filter("Uri", uri).One(page)
+
+	page, err := models.GetPage(true, uri)
 	if err == nil {
 		this.Data["Page"] = page
 	} else {

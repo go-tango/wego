@@ -14,10 +14,7 @@
 
 package post
 
-import (
-	"github.com/go-tango/wego/modules/models"
-)
-
+/*
 func ListCategories(cats *[]models.Category) (int64, error) {
 	return models.Categories().OrderBy("-order").All(cats)
 }
@@ -28,4 +25,4 @@ func ListTopics(topics *[]models.Topic) (int64, error) {
 
 func ListTopicsOfCategory(topics *[]models.Topic, cat *models.Category) (int64, error) {
 	return models.Topics().Filter("Category__id", cat.Id).OrderBy("-order").All(topics)
-}
+}*/

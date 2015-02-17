@@ -15,19 +15,18 @@
 package attachment
 
 import (
-	"github.com/go-tango/wego/setting"
 	"net/http"
 	"path"
-	//"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/attachment"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/routers/base"
+	"github.com/go-tango/wego/setting"
 
-	"github.com/lunny/tango"
 	"github.com/lunny/log"
+	"github.com/lunny/tango"
 )
 
 type UploadRouter struct {
@@ -58,8 +57,9 @@ func (this *UploadRouter) Post() {
 
 	t := time.Now()
 
-	image := models.Image{}
-	image.User = &this.User
+	image := models.Image{
+		UserId: this.User.Id,
+	}
 
 	// get mime type
 	mime := handler.Header.Get("Content-Type")

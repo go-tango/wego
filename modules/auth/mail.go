@@ -19,8 +19,8 @@ import (
 
 	"github.com/Unknwon/i18n"
 
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/mailer"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 )
 

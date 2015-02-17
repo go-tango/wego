@@ -1,8 +1,7 @@
 package api
 
 import (
-	"github.com/astaxie/beego/orm"
-	"github.com/go-tango/wego/modules/models"
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/routers/base"
 
 	"github.com/tango-contrib/xsrf"
@@ -31,9 +30,9 @@ func (this *Post) Post() {
 				if postId, err := this.GetInt("post"); err == nil {
 					//set post best
 					var post models.Post
-					if err := orm.NewOrm().QueryTable("post").Filter("Id", postId).One(&post); err == nil {
+					if err := models.GetById(postId, &post); err == nil {
 						post.IsBest = !post.IsBest
-						if post.Update("IsBest") == nil {
+						if models.UpdateById(post.Id, post, "is_best") == nil {
 							result["success"] = true
 						}
 					}
@@ -42,14 +41,18 @@ func (this *Post) Post() {
 		case "toggle-fav":
 			if postId, err := this.GetInt("post"); err == nil {
 				var post models.Post
-				if err := orm.NewOrm().QueryTable("post").Filter("Id", postId).One(&post); err == nil {
+				if err := models.GetById(postId, &post); err == nil {
 					if post.Id != 0 {
-						var favoritePost models.FavoritePost
-						if this.User.FavoritePosts().Filter("Post__id", post.Id).One(&favoritePost); err == nil {
+						var favoritePost = models.FavoritePost{
+							PostId: post.Id,
+							UserId: this.User.Id,
+						}
+
+						if err := models.GetByExample(&favoritePost); err == nil {
 							if favoritePost.Id > 0 {
 								//toogle IsFav
 								favoritePost.IsFav = !favoritePost.IsFav
-								if favoritePost.Update("IsFav") == nil {
+								if models.UpdateById(favoritePost.Id, favoritePost, "is_fav") == nil {
 									//update user fav post count
 									if favoritePost.IsFav {
 										this.User.FavPosts += 1
@@ -57,20 +60,20 @@ func (this *Post) Post() {
 										this.User.FavPosts -= 1
 
 									}
-									if this.User.Update("FavPosts") == nil {
+									if models.UpdateById(this.User.Id, this.User, "fav_posts") == nil {
 										result["success"] = true
 									}
 								}
 							} else {
 								favoritePost = models.FavoritePost{
-									User:  &this.User,
-									Post:  &post,
-									IsFav: true,
+									UserId: this.User.Id,
+									PostId: post.Id,
+									IsFav:  true,
 								}
-								if favoritePost.Insert() == nil {
+								if models.Insert(favoritePost) == nil {
 									//update user fav post count
 									this.User.FavPosts += 1
-									if this.User.Update("FavPosts") == nil {
+									if models.UpdateById(this.User.Id, this.User, "fav_posts") == nil {
 										result["success"] = true
 									}
 								}

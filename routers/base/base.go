@@ -19,26 +19,27 @@ import (
 	"html/template"
 	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 
-	"github.com/astaxie/beego/validation"
 	"github.com/Unknwon/i18n"
+	"github.com/astaxie/beego/validation"
+	"github.com/lunny/tango"
+	"github.com/tango-contrib/flash"
 	"github.com/tango-contrib/renders"
 	"github.com/tango-contrib/session"
 	"github.com/tango-contrib/xsrf"
-	"github.com/tango-contrib/flash"
-	"github.com/lunny/tango"
 
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/auth"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
 )
 
 // baseRouter implemented global settings for all other routers.
 type BaseRouter struct {
+	tango.Compress
 	tango.Ctx
 	session.Session
 	xsrf.Checker
@@ -46,9 +47,9 @@ type BaseRouter struct {
 	flash.Flash
 	i18n.Locale
 
-	User    models.User
-	IsLogin bool
-	Data renders.T
+	User     models.User
+	IsLogin  bool
+	Data     renders.T
 	TplNames string
 }
 
@@ -115,7 +116,7 @@ func (this *BaseRouter) Before() {
 
 	// pass xsrf helper to template context
 	this.Data["xsrf_token"] = this.XsrfValue
-	this.Data["xsrf_html"] = this.XsrfFormHtml
+	this.Data["xsrf_html"] = this.XsrfFormHtml()
 
 	// read unread notifications
 	if this.IsLogin {
@@ -130,12 +131,10 @@ func (this *BaseRouter) Before() {
 
 // on router finished
 func (this *BaseRouter) After() {
-	if this.TplNames != "" {
-		if !this.Ctx.Written() {
-			err := this.Render(this.TplNames, this.Data)
-			if err != nil {
-				this.Result = err
-			}
+	if !this.Ctx.Written() && this.TplNames != "" {
+		err := this.Render(this.TplNames, this.Data)
+		if err != nil {
+			this.Result = err
 		}
 	}
 }
@@ -304,7 +303,7 @@ func (this *BaseRouter) FlashRedirect(uri string, code int, flag string, args ..
 	this.Session.Set("on_redirect", params)
 
 	this.FlashWrite(flag, flagVal)
-	this.Redirect(uri)
+	this.Flash.Redirect(uri)
 }
 
 func (this *BaseRouter) FlashWrite(key, value string) {
@@ -442,11 +441,6 @@ func (this *BaseRouter) SetFormError(form interface{}, fieldName, errMsg string,
 	if fSets, ok := this.Data[setsName].(*utils.FormSets); ok {
 		fSets.SetError(fieldName, errMsg)
 	}
-}
-
-// check xsrf and show a friendly page
-func (this *BaseRouter) CheckXsrfCookie() bool {
-	return this.CheckXsrf()
 }
 
 func (this *BaseRouter) IsAjax() bool {

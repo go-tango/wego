@@ -18,26 +18,26 @@ package setting
 
 import (
 	"fmt"
+	"html/template"
+	"io"
 	"net/url"
 	"os"
-	"io"
 	"path/filepath"
 	"strings"
 	"time"
-	"html/template"
 
 	"github.com/Unknwon/goconfig"
 	"github.com/howeyc/fsnotify"
 
 	"github.com/lunny/log"
 
-	"github.com/macaron-contrib/cache"
-	"github.com/astaxie/beego/orm"
-	"github.com/tango-contrib/captcha"
-	"github.com/beego/compress"
 	"github.com/Unknwon/i18n"
+	"github.com/astaxie/beego/orm"
+	"github.com/beego/compress"
 	"github.com/go-tango/social-auth"
 	"github.com/go-tango/social-auth/apps"
+	"github.com/macaron-contrib/cache"
+	"github.com/tango-contrib/captcha"
 )
 
 const (
@@ -171,18 +171,18 @@ var (
 )
 
 var (
-	SessionProvider string
-	SessionSavePath string
-	SessionName string
+	SessionProvider       string
+	SessionSavePath       string
+	SessionName           string
 	SessionCookieLifeTime int
-	SessionGCMaxLifetime int64
+	SessionGCMaxLifetime  int64
 )
 
 var (
 	DriverName string
 	DataSource string
-	MaxIdle int
-	MaxOpen int
+	MaxIdle    int
+	MaxOpen    int
 )
 
 var (
@@ -228,7 +228,9 @@ func LoadConfig() *goconfig.ConfigFile {
 	IsProMode = Cfg.MustValue("app", "run_mode") == "pro"
 
 	// cache system
-	Cache, err = cache.NewCache("memory", `{"interval":360}`)
+	Cache, err = cache.NewCacher("memory", cache.Options{
+		Interval: 360,
+	})
 	Captcha = captcha.New(captcha.Options{}, Cache)
 	Captcha.FieldIdName = "CaptchaId"
 	Captcha.FieldCaptchaName = "Captcha"
@@ -400,8 +402,8 @@ func settingLocales() {
 	langs := "en-US|zh-CN"
 	for _, lang := range strings.Split(langs, "|") {
 		lang = strings.TrimSpace(lang)
-		files := []string{"conf/" + "locale_" + lang + ".ini"}
-		if fh, err := os.Open(files[0]); err == nil {
+		files := []interface{}{"conf/" + "locale_" + lang + ".ini"}
+		if fh, err := os.Open(files[0].(string)); err == nil {
 			fh.Close()
 		} else {
 			files = nil

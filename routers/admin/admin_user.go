@@ -18,10 +18,9 @@ import (
 	"fmt"
 
 	"github.com/lunny/log"
-	"github.com/astaxie/beego/orm"
 
+	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/auth"
-	"github.com/go-tango/wego/modules/models"
 	"github.com/go-tango/wego/modules/utils"
 )
 
@@ -39,10 +38,6 @@ func (this *UserAdminRouter) Object() interface{} {
 	return &this.object
 }
 
-func (this *UserAdminRouter) ObjectQs() orm.QuerySeter {
-	return models.Users().RelatedSel()
-}
-
 type UserAdminList struct {
 	UserAdminRouter
 }
@@ -51,17 +46,14 @@ type UserAdminList struct {
 func (this *UserAdminList) Get() {
 	var q = this.GetString("q")
 	var users []models.User
-	var qs orm.QuerySeter
+	sess := models.Orm().NewSession()
+	defer sess.Close()
 	if q != "" {
-		cond := orm.NewCondition()
-		cond = cond.Or("Email", q)
-		cond = cond.Or("UserName", q)
-		qs = models.Users().SetCond(cond)
-	} else {
-		qs = models.Users()
+		sess.Where("email = ?", q).Or("user_name = ?", q)
 	}
+
 	this.Data["q"] = q
-	if err := this.SetObjects(qs, &users); err != nil {
+	if err := this.SetObjects(sess, &users); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)
 	}
@@ -86,7 +78,7 @@ func (this *UserAdminNew) Post() {
 
 	var user models.User
 	form.SetToUser(&user)
-	if err := user.Insert(); err == nil {
+	if err := models.Insert(&user); err == nil {
 		this.FlashRedirect(fmt.Sprintf("/admin/user/%d", user.Id), 302, "CreateSuccess")
 		return
 	} else {
@@ -108,7 +100,7 @@ func (this *UserAdminEdit) Get() {
 
 // view for update object
 func (this *UserAdminEdit) Post() {
-	form := auth.UserAdminForm{Id: this.object.Id}
+	form := auth.UserAdminForm{Id: int(this.object.Id)}
 	if this.ValidFormSets(&form) == false {
 		return
 	}
@@ -121,7 +113,7 @@ func (this *UserAdminEdit) Post() {
 	// update changed fields only
 	if len(changes) > 0 {
 		form.SetToUser(&this.object)
-		if err := this.object.Update(changes...); err == nil {
+		if err := models.UpdateById(this.object.Id, this.object, models.Obj2Table(changes)...); err == nil {
 			this.FlashRedirect(url, 302, "UpdateSuccess")
 			return
 		} else {
@@ -144,7 +136,7 @@ func (this *UserAdminDelete) Post() {
 	}
 
 	// delete object
-	if err := this.object.Delete(); err == nil {
+	if err := models.DeleteById(this.object.Id, this.object); err == nil {
 		this.FlashRedirect("/admin/user", 302, "DeleteSuccess")
 		return
 	} else {
