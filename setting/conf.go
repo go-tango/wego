@@ -32,7 +32,6 @@ import (
 	"github.com/lunny/log"
 
 	"github.com/Unknwon/i18n"
-	"github.com/astaxie/beego/orm"
 	"github.com/beego/compress"
 	"github.com/go-tango/social-auth"
 	"github.com/go-tango/social-auth/apps"
@@ -269,7 +268,7 @@ func LoadConfig() *goconfig.ConfigFile {
 	}
 
 	// set default database
-	err = orm.RegisterDataBase("default", DriverName, DataSource, MaxIdle, MaxOpen)
+	/*err = orm.RegisterDataBase("default", DriverName, DataSource, MaxIdle, MaxOpen)
 	if err != nil {
 		log.Error(err)
 	}
@@ -278,7 +277,7 @@ func LoadConfig() *goconfig.ConfigFile {
 	err = orm.RunSyncdb("default", false, false)
 	if err != nil {
 		log.Error(err)
-	}
+	}*/
 
 	reloadConfig()
 

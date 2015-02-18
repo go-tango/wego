@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/lunny/log"
 
 	"github.com/go-tango/wego/models"
@@ -134,7 +133,7 @@ func (this *ModelAdminRouter) QueryObject() bool {
 	// query object
 	if err := models.GetById(int64(id), object); err != nil {
 		this.NotFound()
-		if err != orm.ErrNoRows {
+		if err != models.ErrNotExist {
 			log.Error("SetObject: ", err)
 		}
 		return false

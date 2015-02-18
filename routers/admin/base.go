@@ -15,7 +15,6 @@
 package admin
 
 import (
-	"github.com/astaxie/beego/orm"
 	"github.com/tango-contrib/xsrf"
 
 	"github.com/go-tango/wego/models"
@@ -69,7 +68,7 @@ func (this *ModelSelect) Post() {
 		"success": false,
 	}
 
-	var data []orm.ParamsList
+	var data = make([][]interface{}, 0)
 
 	defer func() {
 		if len(data) > 0 {
