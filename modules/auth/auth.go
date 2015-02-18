@@ -191,7 +191,6 @@ func GetUserIdFromSession(sess *httpsession.Session) int64 {
 // get user if key exist in session
 func GetUserFromSession(user *models.User, sess *httpsession.Session) bool {
 	id := GetUserIdFromSession(sess)
-	fmt.Println("getuseridfromsession:", id)
 	if id > 0 {
 		if u, err := models.GetUserById(int64(id)); err == nil {
 			*user = *u
@@ -225,7 +224,6 @@ func VerifyUser(user *models.User, username, password string) (success bool) {
 
 // compare raw password and encoded password
 func VerifyPassword(rawPwd, encodedPwd string) bool {
-
 	// for discuz accounts
 	if len(encodedPwd) == 39 {
 		salt := encodedPwd[:6]
