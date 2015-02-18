@@ -1,32 +1,27 @@
 # WeGo
 
-[简体中文](README_CN.md)
+WeGo是一个开源的论坛系统，最初是从WeTalk克隆而来，后使用 [tango](http://github.com/lunny/tango) 和 [xorm](http://xorm.io) 进行了重写。
 
-An open source forum system for Gopher community forked from WeTalk and rewritten via [tango](http://github.com/lunny/tango) & [xorm](http://xorm.io).
-
-### Usage
+### 使用
 
 ```
 go get -u github.com/go-tango/wego
 cd $GOPATH/src/github.com/go-tango/wego
 ```
 
-I suggest you [update all Dependencies](#dependencies)
+建议使用前更新所有的依赖 [update all Dependencies](#dependencies)
 
-Copy `conf/global/app.ini` to `conf/app.ini` and edit it. All configure has comment in it.
+如果需要自定义配置文件，请拷贝 `conf/global/app.ini` 到 `conf/app.ini` 然后进行修改。
 
-The files in `conf/` can overwrite `conf/global/` in runtime.
+在目录 `conf/` 里面的配置文件将会覆盖 `conf/global/` 里面的配置文件。
 
-
-**Run WeGo**
+**运行 WeGo**
 
 ```
 bee run watchall
 ```
 
-### Dependencies
-
-Contrib
+### 依赖
 
 * Tango [https://github.com/lunny/tango](https://github.com/lunny/tango) (develop branch)
 * Social-Auth [https://github.com/go-tango/social-auth](https://github.com/go-tango/social-auth)
@@ -43,7 +38,7 @@ go get -u github.com/lunny/tango
 cd $GOPATH/src/github.com/lunny/tango
 ```
 
-Update all Dependencies
+更新所有依赖
 
 ```
 go get -u github.com/go-tango/social-auth
@@ -56,15 +51,15 @@ go get -u github.com/nfnt/resize
 go get -u github.com/slene/blackfriday
 ```
 
-### Static Files
+### 静态文件
 
-WeGo use `Google Closure Compile` and `Yui Compressor` compress js and css files.
+WeGo 使用 `Google Closure Compile` 和 `Yui Compressor` 压缩 js 和 css 文件.
 
-So you could need Java Runtime. Or close this feature in code by yourself.
+所以你可能需要Java运行时环境，或者您可以通过配置文件关闭此特性。
 
-### Contact
+### 联系
 
-Maintain by [lunny](https://github.com/lunny)
+此工程由 [lunny](https://github.com/lunny) 维护。
 
 ## License
 
