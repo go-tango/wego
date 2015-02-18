@@ -39,7 +39,7 @@ import (
 
 // baseRouter implemented global settings for all other routers.
 type BaseRouter struct {
-	tango.Compress
+	//tango.Compress
 	tango.Ctx
 	session.Session
 	xsrf.Checker
@@ -147,6 +147,7 @@ func (this *BaseRouter) LoginUser(user *models.User, remember bool) string {
 		auth.SetCookie(this, "login_to", "", -1, "/")
 	}
 
+	fmt.Println("sessin:", this.Session.Id(), this.Session.IsValid())
 	// login user
 	auth.LoginUser(user, this.Context, this.Session.Session, remember)
 

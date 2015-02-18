@@ -29,7 +29,7 @@ type BulletinAdminList struct {
 
 func (this *BulletinAdminList) Get() {
 	var bulletins []models.Bulletin
-	sess := models.Orm().Asc("type")
+	sess := models.ORM().Asc("type")
 	if err := this.SetObjects(sess, &bulletins); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)

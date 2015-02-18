@@ -45,7 +45,7 @@ type TopicAdminList struct {
 // view for list model data
 func (this *TopicAdminList) Get() {
 	var topics []models.Topic
-	sess := models.Orm().Desc("category_id")
+	sess := models.ORM().Desc("category_id")
 	if err := this.SetObjects(sess, &topics); err != nil {
 		this.Data["Error"] = err
 		log.Error(err)

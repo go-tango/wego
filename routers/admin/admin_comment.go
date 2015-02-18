@@ -45,7 +45,7 @@ type CommentAdminList struct {
 // view for list model data
 func (this *CommentAdminList) Get() {
 	var comments []models.Comment
-	sess := models.Orm().NewSession()
+	sess := models.ORM().NewSession()
 	defer sess.Close()
 	if err := this.SetObjects(sess, &comments); err != nil {
 		this.Data["Error"] = err

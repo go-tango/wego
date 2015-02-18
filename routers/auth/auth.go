@@ -19,6 +19,7 @@ import (
 
 	"github.com/lunny/log"
 
+	"github.com/go-tango/wego/middlewares"
 	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/auth"
 	"github.com/go-tango/wego/modules/utils"
@@ -32,7 +33,7 @@ type Login struct {
 }
 
 // Get implemented login page.
-func (this *Login) Get() {
+func (this *Login) Get() error {
 	this.Data["IsLoginPage"] = true
 
 	loginRedirect := strings.TrimSpace(this.GetString("to"))
@@ -45,7 +46,7 @@ func (this *Login) Get() {
 
 	// no need login
 	if this.CheckLoginRedirect(false, loginRedirect) {
-		return
+		return nil
 	}
 
 	if len(loginRedirect) > 0 {
@@ -55,7 +56,7 @@ func (this *Login) Get() {
 	form := auth.LoginForm{}
 	this.SetFormSets(&form)
 
-	this.Render("auth/login.html", this.Data)
+	return this.Render("auth/login.html", this.Data)
 }
 
 // Login implemented user login.
@@ -142,52 +143,50 @@ type Register struct {
 }
 
 // Get implemented Get method for RegisterRouter.
-func (this *Register) Get() {
+func (this *Register) Get() error {
 	// no need login
 	if this.CheckLoginRedirect(false) {
-		return
+		return nil
 	}
 
 	this.Data["IsRegisterPage"] = true
 
 	form := auth.RegisterForm{Locale: this.Locale}
 	this.SetFormSets(&form)
-	this.Render("auth/register.html", this.Data)
+	return this.Render("auth/register.html", this.Data)
 }
 
 // Register implemented Post method for RegisterRouter.
-func (this *Register) Post() {
+func (this *Register) Post() error {
 	this.Data["IsRegisterPage"] = true
 
 	// no need login
 	if this.CheckLoginRedirect(false) {
-		return
+		return nil
 	}
 
 	form := auth.RegisterForm{Locale: this.Locale}
 	// valid form and put errors to template context
 	if this.ValidFormSets(&form) == false {
-		return
+		return this.Render("auth/register.html", this.Data)
 	}
 
 	// Create new user.
 	user := new(models.User)
 
-	if err := auth.RegisterUser(user, form.UserName, form.Email, form.Password, this.Locale); err == nil {
-		auth.SendRegisterMail(this.Locale, user)
-
-		loginRedirect := this.LoginUser(user, false)
-		if loginRedirect == "/" {
-			this.FlashRedirect("/settings/profile", 302, "RegSuccess")
-		} else {
-			this.Redirect(loginRedirect)
-			return
-		}
-
-		this.Render("auth/register.html", this.Data)
-	} else {
-		log.Error("Register: Failed ", err)
+	if err := auth.RegisterUser(user, form.UserName, form.Email, form.Password, this.Locale); err != nil {
+		return err
 	}
+
+	auth.SendRegisterMail(middlewares.Renders, this.Locale, user)
+
+	loginRedirect := this.LoginUser(user, false)
+	if loginRedirect == "/" {
+		this.FlashRedirect("/settings/profile", 302, "RegSuccess")
+	} else {
+		this.Redirect(loginRedirect)
+	}
+	return nil
 }
 
 type RegisterActive struct {

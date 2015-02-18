@@ -45,7 +45,7 @@ type CategoryAdminList struct {
 // view for list model data
 func (this *CategoryAdminList) Get() {
 	var cats []models.Category
-	sess := models.Orm().NewSession()
+	sess := models.ORM().NewSession()
 	defer sess.Close()
 	if err := this.SetObjects(sess, &cats); err != nil {
 		this.Data["Error"] = err

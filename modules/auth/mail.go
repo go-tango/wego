@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/Unknwon/i18n"
+	"github.com/tango-contrib/renders"
 
 	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/mailer"
@@ -25,14 +26,15 @@ import (
 )
 
 // Send user register mail with active code
-func SendRegisterMail(locale i18n.Locale, user *models.User) {
+func SendRegisterMail(renders *renders.Renders, locale i18n.Locale, user *models.User) {
 	code := CreateUserActiveCode(user, nil)
 
 	subject := locale.Tr("mail.register_success_subject")
 
 	data := mailer.GetMailTmplData(locale.Lang, user)
 	data["Code"] = code
-	body := utils.RenderTemplate("mail/auth/register_success.html", data)
+
+	body, _ := renders.RenderString("mail/auth/register_success.html", data)
 
 	msg := mailer.NewMailMessage([]string{user.Email}, subject, body)
 	msg.Info = fmt.Sprintf("UID: %d, send register mail", user.Id)

@@ -49,7 +49,7 @@ func (this *ModelGet) Get() {
 	}()
 
 	if model == "User" {
-		models.Orm().Iterate(&models.User{Id: id}, func(idx int, bean interface{}) error {
+		models.ORM().Iterate(&models.User{Id: id}, func(idx int, bean interface{}) error {
 			user := bean.(*models.User)
 			data = append(data, []interface{}{user.Id, user.UserName})
 			return nil
@@ -85,7 +85,7 @@ func (this *ModelSelect) Post() {
 	}
 
 	if model == "User" {
-		models.Orm().Limit(10).Where("user_name like ?", "%"+search+"%").
+		models.ORM().Limit(10).Where("user_name like ?", "%"+search+"%").
 			Iterate(&models.User{}, func(idx int, bean interface{}) error {
 			user := bean.(*models.User)
 			data = append(data, []interface{}{user.Id, user.UserName})

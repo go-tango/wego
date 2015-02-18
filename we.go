@@ -16,20 +16,18 @@
 package main
 
 import (
-	"html/template"
 	"time"
 
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/debug"
 	"github.com/tango-contrib/events"
 	"github.com/tango-contrib/flash"
-	"github.com/tango-contrib/renders"
 	"github.com/tango-contrib/session"
 	"github.com/tango-contrib/xsrf"
 
 	"github.com/go-tango/social-auth"
+	"github.com/go-tango/wego/middlewares"
 	"github.com/go-tango/wego/models"
-	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/routers"
 	"github.com/go-tango/wego/routers/auth"
 	"github.com/go-tango/wego/setting"
@@ -55,24 +53,16 @@ func initialize() {
 	SECRET_KEY = setting.QiniuSecurityKey
 }
 
-func mergeFuncMap(funcs ...template.FuncMap) template.FuncMap {
-	var ret = make(template.FuncMap)
-	for _, fs := range funcs {
-		for k, f := range fs {
-			ret[k] = f
-		}
-	}
-	return ret
-}
-
 func initTango() *tango.Tango {
+	middlewares.Init()
+
 	tg := tango.NewWithLog(setting.Log)
 	tg.Use(debug.Debug(debug.Options{
 		IgnorePrefix:     "/static",
 		HideResponseBody: true,
 	}))
 	tg.Use(tango.ClassicHandlers...)
-	//tg := tango.Classic(setting.Log)
+
 	tg.Use(
 		tango.Static(tango.StaticOptions{
 			RootPath: "./static",
@@ -83,10 +73,7 @@ func initTango() *tango.Tango {
 			Prefix:   "static_source",
 		}),
 		session.New(time.Duration(setting.SessionCookieLifeTime)),
-		renders.New(renders.Options{
-			Directory: setting.TemplatesPath,
-			Funcs:     mergeFuncMap(utils.FuncMap(), setting.Funcs),
-		}),
+		middlewares.Renders,
 		setting.Captcha,
 	)
 	if setting.EnableXSRF {

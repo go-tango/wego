@@ -21,6 +21,7 @@ import (
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/session"
 
+	"github.com/go-tango/wego/middlewares"
 	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/auth"
 	"github.com/go-tango/wego/modules/utils"
@@ -33,7 +34,7 @@ type socialAuther struct {
 
 func (p *socialAuther) IsUserLogin(ctx *tango.Context, session *httpsession.Session) (int, bool) {
 	if id := auth.GetUserIdFromSession(session); id > 0 {
-		return id, true
+		return int(id), true
 	}
 	return 0, false
 }
@@ -174,7 +175,7 @@ func (this *SocialAuthRouter) Post() {
 	default:
 		if err := auth.RegisterUser(&user, formR.UserName, formR.Email, formR.Password, this.Locale); err == nil {
 
-			auth.SendRegisterMail(this.Locale, &user)
+			auth.SendRegisterMail(middlewares.Renders, this.Locale, &user)
 
 			goto connect
 

@@ -2,7 +2,7 @@ package models
 
 import "github.com/go-xorm/xorm"
 
-func Orm() *xorm.Engine {
+func ORM() *xorm.Engine {
 	return orm
 }
 
@@ -52,6 +52,11 @@ func Find(limit, start int, objs interface{}) error {
 
 func DeleteById(id int64, obj interface{}) error {
 	_, err := orm.Id(id).Delete(obj)
+	return err
+}
+
+func DeleteByExample(obj interface{}) error {
+	_, err := orm.Delete(obj)
 	return err
 }
 

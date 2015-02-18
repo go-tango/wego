@@ -28,19 +28,19 @@ type ProfileRouter struct {
 }
 
 // Profile implemented user profile settings page.
-func (this *ProfileRouter) Get() {
+func (this *ProfileRouter) Get() error {
 	this.Data["IsUserSettingPage"] = true
 
 	// need login
 	if this.CheckLoginRedirect() {
-		return
+		return nil
 	}
 
 	form := auth.ProfileForm{Locale: this.Locale}
 
 	form.SetFromUser(&this.User)
 	this.SetFormSets(&form)
-	this.Render("settings/profile.html", this.Data)
+	return this.Render("settings/profile.html", this.Data)
 }
 
 // ProfileSave implemented save user profile.
@@ -83,23 +83,22 @@ func (this *ProfileRouter) Post() {
 	this.Render("settings/profile.html", this.Data)
 }
 
-
 // SettingsRouter serves user settings.
 type PasswordRouter struct {
 	base.BaseRouter
 }
 
-func (this *PasswordRouter) Get() {
+func (this *PasswordRouter) Get() error {
 	this.Data["IsUserSettingPage"] = true
 
 	//need login
 	if this.CheckLoginRedirect() {
-		return
+		return nil
 	}
 
 	formPwd := auth.PasswordForm{}
 	this.SetFormSets(&formPwd)
-	this.Render("settings/change_password.html", this.Data)
+	return this.Render("settings/change_password.html", this.Data)
 }
 
 func (this *PasswordRouter) Post() {
@@ -130,17 +129,17 @@ type AvatarRouter struct {
 	base.BaseRouter
 }
 
-func (this *AvatarRouter) Get() {
+func (this *AvatarRouter) Get() error {
 	this.Data["IsUserSettingPage"] = true
 	//need login
 	if this.CheckLoginRedirect() {
-		return
+		return nil
 	}
 
 	form := auth.UserAvatarForm{}
 	form.SetFromUser(&this.User)
 	this.SetFormSets(&form)
-	this.Render("settings/user_avatar.html", this.Data)
+	return this.Render("settings/user_avatar.html", this.Data)
 }
 
 func (this *AvatarRouter) Post() {

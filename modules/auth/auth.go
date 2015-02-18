@@ -26,7 +26,6 @@ import (
 	"strings"
 
 	"github.com/Unknwon/i18n"
-	"github.com/astaxie/beego/orm"
 	"github.com/go-xweb/httpsession"
 	"github.com/lunny/log"
 	"github.com/lunny/tango"
@@ -40,45 +39,29 @@ import (
 
 // CanRegistered checks if the username or e-mail is available.
 func CanRegistered(userName string, email string) (bool, bool, error) {
-	cond := orm.NewCondition()
-	cond = cond.Or("UserName", userName).Or("Email", email)
-
-	var maps []orm.Params
-	o := orm.NewOrm()
-	n, err := o.QueryTable("user").SetCond(cond).Values(&maps, "UserName", "Email")
+	var user models.User
+	has, err := models.ORM().Where("user_name = ?", userName).Or("email = ?", email).Get(&user)
 	if err != nil {
 		return false, false, err
 	}
-
-	e1 := true
-	e2 := true
-
-	if n > 0 {
-		for _, m := range maps {
-			if e1 && orm.ToStr(m["UserName"]) == userName {
-				e1 = false
-			}
-			if e2 && orm.ToStr(m["Email"]) == email {
-				e2 = false
-			}
-		}
+	if has {
+		return user.UserName != userName, user.Email != email, nil
 	}
 
-	return e1, e2, nil
+	return true, true, nil
 }
 
 // check if exist user by username or email
 func HasUser(user *models.User, username string) bool {
-	var err error
-	qs := orm.NewOrm()
+	var userTemp models.User
 	if strings.IndexRune(username, '@') == -1 {
-		user.UserName = username
-		err = qs.Read(user, "UserName")
+		userTemp.UserName = username
 	} else {
-		user.Email = username
-		err = qs.Read(user, "Email")
+		userTemp.Email = username
 	}
+	err := models.GetByExample(&userTemp)
 	if err == nil {
+		*user = userTemp
 		return true
 	}
 	return false
@@ -143,6 +126,8 @@ func LoginUser(user *models.User, ctx *tango.Context, session *httpsession.Sessi
 	// werid way of beego session regenerate id...
 	//session.SessionRelease(ctx.ResponseWriter)
 	//session = beego.GlobalSessions.SessionRegenerateId(ctx.ResponseWriter, ctx.Req())
+	fmt.Println("user:", *user)
+
 	session.Set("auth_user_id", user.Id)
 
 	if remember {
@@ -194,13 +179,10 @@ func LoginUserFromRememberCookie(user *models.User, ctx *tango.Context, session 
 func LogoutUser(ctx *tango.Context, sess *httpsession.Session) {
 	DeleteRememberCookie(ctx)
 	sess.Del("auth_user_id")
-	//TODO: need flush method
-	//sess.Flush()
-	//beego.GlobalSessions.SessionDestroy(ctx.ResponseWriter, ctx.Req())
 }
 
-func GetUserIdFromSession(sess *httpsession.Session) int {
-	if id, ok := sess.Get("auth_user_id").(int); ok && id > 0 {
+func GetUserIdFromSession(sess *httpsession.Session) int64 {
+	if id, ok := sess.Get("auth_user_id").(int64); ok {
 		return id
 	}
 	return 0
@@ -209,6 +191,7 @@ func GetUserIdFromSession(sess *httpsession.Session) int {
 // get user if key exist in session
 func GetUserFromSession(user *models.User, sess *httpsession.Session) bool {
 	id := GetUserIdFromSession(sess)
+	fmt.Println("getuseridfromsession:", id)
 	if id > 0 {
 		if u, err := models.GetUserById(int64(id)); err == nil {
 			*user = *u

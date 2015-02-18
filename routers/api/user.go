@@ -46,7 +46,7 @@ func (this *Users) Post() {
 		switch action {
 		case "get-follows":
 			var data = make([][]interface{}, 0)
-			models.Orm().Iterate(&models.Follow{UserId: this.User.Id},
+			models.ORM().Iterate(&models.Follow{UserId: this.User.Id},
 				func(idx int, bean interface{}) error {
 					followUser := bean.(*models.Follow).FollowUser()
 					if followUser != nil {

@@ -89,12 +89,12 @@ func (this *Home) Get() error {
 	//favorite posts
 	var favPostIds = make([]int64, 0)
 	var favPosts []models.Post
-	models.Orm().Limit(8).Desc("created").Iterate(new(models.FavoritePost), func(idx int, bean interface{}) error {
+	models.ORM().Limit(8).Desc("created").Iterate(new(models.FavoritePost), func(idx int, bean interface{}) error {
 		favPostIds = append(favPostIds, bean.(*models.FavoritePost).PostId)
 		return nil
 	})
 	if len(favPostIds) > 0 {
-		models.Orm().In("id", favPostIds).Desc("created").Find(&favPosts)
+		models.ORM().In("id", favPostIds).Desc("created").Find(&favPosts)
 	}
 	this.Data["TheUserFavoritePosts"] = favPosts
 	this.Data["TheUserFavoritePostsMore"] = len(favPostIds) >= 8
@@ -106,10 +106,10 @@ type Posts struct {
 	UserRouter
 }
 
-func (this *Posts) Get() {
+func (this *Posts) Get() error {
 	var user models.User
 	if this.getUser(&user) {
-		return
+		return nil
 	}
 
 	limit := 20
@@ -120,17 +120,17 @@ func (this *Posts) Get() {
 	models.Find(limit, pager.Offset(), &posts)
 
 	this.Data["TheUserPosts"] = posts
-	this.Render("user/posts.html", this.Data)
+	return this.Render("user/posts.html", this.Data)
 }
 
 type Comments struct {
 	UserRouter
 }
 
-func (this *Comments) Get() {
+func (this *Comments) Get() error {
 	var user models.User
 	if this.getUser(&user) {
-		return
+		return nil
 	}
 
 	limit := 20
@@ -142,7 +142,7 @@ func (this *Comments) Get() {
 
 	this.Data["TheUserComments"] = comments
 
-	this.Render("user/comments.html", this.Data)
+	return this.Render("user/comments.html", this.Data)
 }
 
 func (this *UserRouter) getFollows(user *models.User, following bool) []map[string]interface{} {
@@ -159,7 +159,7 @@ func (this *UserRouter) getFollows(user *models.User, following bool) []map[stri
 	pager := this.SetPaginator(limit, nums)
 
 	var follows []*models.Follow
-	models.Orm().Limit(limit, pager.Offset()).Find(&follows, &follow)
+	models.ORM().Limit(limit, pager.Offset()).Find(&follows, &follow)
 
 	if len(follows) == 0 {
 		return nil
@@ -175,7 +175,7 @@ func (this *UserRouter) getFollows(user *models.User, following bool) []map[stri
 	}
 
 	var fids = make(map[int]bool)
-	models.Orm().In("follow_user_id", ids).Iterate(&models.Follow{UserId: this.User.Id},
+	models.ORM().In("follow_user_id", ids).Iterate(&models.Follow{UserId: this.User.Id},
 		func(idx int, bean interface{}) error {
 			tid, _ := utils.StrTo(utils.ToStr(bean.(*models.Follow).Id)).Int()
 			if tid > 0 {
@@ -209,32 +209,32 @@ type Following struct {
 	UserRouter
 }
 
-func (this *Following) Get() {
+func (this *Following) Get() error {
 	var user models.User
 	if this.getUser(&user) {
-		return
+		return nil
 	}
 
 	users := this.getFollows(&user, true)
 
 	this.Data["TheUserFollowing"] = users
-	this.Render("user/following.html", this.Data)
+	return this.Render("user/following.html", this.Data)
 }
 
 type Followers struct {
 	UserRouter
 }
 
-func (this *Followers) Get() {
+func (this *Followers) Get() error {
 	var user models.User
 	if this.getUser(&user) {
-		return
+		return nil
 	}
 
 	users := this.getFollows(&user, false)
 
 	this.Data["TheUserFollowers"] = users
-	this.Render("user/followers.html", this.Data)
+	return this.Render("user/followers.html", this.Data)
 }
 
 type FollowTopics struct {
@@ -274,15 +274,15 @@ func (this *FavoritePosts) Get() {
 
 	var postIds = make([]int64, 0)
 	var posts []models.Post
-	models.Orm().Desc("created").Iterate(&models.FavoritePost{UserId: user.Id},
+	models.ORM().Desc("created").Iterate(&models.FavoritePost{UserId: user.Id},
 		func(idx int, bean interface{}) error {
 			postIds = append(postIds, bean.(*models.FavoritePost).PostId)
 			return nil
 		})
 	if len(postIds) > 0 {
-		cnt, _ := models.Orm().In("id", postIds).Count(models.Post{})
+		cnt, _ := models.ORM().In("id", postIds).Count(models.Post{})
 		pager := this.SetPaginator(setting.PostCountPerPage, cnt)
-		models.Orm().Desc("created").Limit(setting.PostCountPerPage, pager.Offset()).Find(&posts)
+		models.ORM().Desc("created").Limit(setting.PostCountPerPage, pager.Offset()).Find(&posts)
 	}
 
 	this.Data["TheUserFavoritePosts"] = posts

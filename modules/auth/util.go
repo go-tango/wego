@@ -191,9 +191,9 @@ func UserFollow(user *models.User, theUser *models.User) {
 
 func UserUnFollow(user *models.User, theUser *models.User) {
 	follow := &models.Follow{UserId: user.Id, FollowUserId: theUser.Id}
-	num, _ := models.Orm().Delete(follow)
+	num, _ := models.ORM().Delete(follow)
 	if num > 0 {
-		models.Orm().UseBool().Update(&models.Follow{}, follow)
+		models.ORM().UseBool().Update(&models.Follow{}, follow)
 
 		if nums, err := models.Count(&models.Follow{UserId: user.Id}); err == nil {
 			user.Following = int(nums)

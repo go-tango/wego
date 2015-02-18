@@ -46,7 +46,7 @@ type UserAdminList struct {
 func (this *UserAdminList) Get() {
 	var q = this.GetString("q")
 	var users []models.User
-	sess := models.Orm().NewSession()
+	sess := models.ORM().NewSession()
 	defer sess.Close()
 	if q != "" {
 		sess.Where("email = ?", q).Or("user_name = ?", q)

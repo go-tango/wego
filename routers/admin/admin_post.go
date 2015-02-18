@@ -51,7 +51,7 @@ type PostAdminList struct {
 // view for list model data
 func (this *PostAdminList) Get() {
 	var posts []models.Post
-	sess := models.Orm().NewSession()
+	sess := models.ORM().NewSession()
 	defer sess.Close()
 	if err := this.SetObjects(sess, &posts); err != nil {
 		this.Data["Error"] = err
