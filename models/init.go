@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 
+	"github.com/go-tango/social-auth"
 	"github.com/go-tango/wego/setting"
 	"github.com/go-xorm/xorm"
 )
@@ -32,4 +33,6 @@ func Init(isProMode bool) {
 	if err != nil {
 		panic(err)
 	}
+
+	social.SetORM(orm)
 }
