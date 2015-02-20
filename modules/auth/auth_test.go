@@ -17,15 +17,14 @@ package auth
 import (
 	"testing"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/go-tango/wego/models"
 	. "github.com/go-tango/wego/modules/utils"
 )
 
 var encoded = "9e2a6b0a670d48bc9fae7f79503a0d7e888650ede413810ff762ae767181fb3e7cdec433d435ed2c671bf4b6ecc49ebae5c7"
 
 func init() {
-	orm.RegisterDataBase("default", "mysql", "root:root@/wetalk?charset=utf8", 30)
-	orm.RunSyncdb("default", true, false)
+	models.Init(false)
 }
 
 func TestPasswordVerify(t *testing.T) {
