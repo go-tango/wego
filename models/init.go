@@ -26,6 +26,12 @@ func Init(isProMode bool) {
 	if !isProMode {
 		orm.ShowSQL = true
 	}
+	if setting.DebugLog {
+		orm.ShowDebug = true
+		orm.ShowWarn = true
+	}
+	orm.ShowErr = true
+	orm.ShowInfo = true
 
 	err = orm.Sync2(new(Setting), new(Category), new(Post), new(Image),
 		new(User), new(FavoritePost), new(Follow), new(Topic), new(FollowTopic),

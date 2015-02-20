@@ -33,25 +33,7 @@ import (
 	"github.com/go-tango/wego/setting"
 
 	_ "github.com/go-sql-driver/mysql"
-	. "github.com/qiniu/api/conf"
 )
-
-// We have to call a initialize function manully
-// because we use `bee bale` to pack static resources
-// and we cannot make sure that which init() execute first.
-func initialize() {
-	setting.LoadConfig()
-
-	setting.SocialAuth = social.NewSocial("/login/", auth.SocialAuther)
-	setting.SocialAuth.ConnectSuccessURL = "/settings/profile"
-	setting.SocialAuth.ConnectFailedURL = "/settings/profile"
-	setting.SocialAuth.ConnectRegisterURL = "/register/connect"
-	setting.SocialAuth.LoginURL = "/login"
-
-	//Qiniu
-	ACCESS_KEY = setting.QiniuAccessKey
-	SECRET_KEY = setting.QiniuSecurityKey
-}
 
 func initTango(isprod bool) *tango.Tango {
 	middlewares.Init()
@@ -66,8 +48,8 @@ func initTango(isprod bool) *tango.Tango {
 	if !isprod {
 		tg.Use(debug.Debug(debug.Options{
 			IgnorePrefix:     "/static",
-			HideResponseBody: false,
-			HideRequestBody:  false,
+			HideResponseBody: true,
+			HideRequestBody:  true,
 		}))
 	}
 
@@ -86,6 +68,9 @@ func initTango(isprod bool) *tango.Tango {
 		middlewares.Renders,
 		setting.Captcha,
 	)
+	tg.Get("/favicon.ico", func(ctx *tango.Context) {
+		ctx.ServeFile("./static/favicon.ico")
+	})
 	if setting.EnableXSRF {
 		tg.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
 	}
@@ -94,8 +79,14 @@ func initTango(isprod bool) *tango.Tango {
 }
 
 func main() {
-	// init config
-	initialize()
+	// init configs
+	setting.LoadConfig()
+
+	setting.SocialAuth = social.NewSocial("/login/", auth.SocialAuther)
+	setting.SocialAuth.ConnectSuccessURL = "/settings/profile"
+	setting.SocialAuth.ConnectFailedURL = "/settings/profile"
+	setting.SocialAuth.ConnectRegisterURL = "/register/connect"
+	setting.SocialAuth.LoginURL = "/login"
 
 	// init models
 	models.Init(setting.IsProMode)
@@ -103,7 +94,7 @@ func main() {
 	// init tango
 	t := initTango(setting.IsProMode)
 
-	// initialize the routers
+	// init routers
 	routers.Init(t)
 
 	// run

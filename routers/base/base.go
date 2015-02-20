@@ -326,7 +326,7 @@ func (this *BaseRouter) FormOnceNotMatch() bool {
 	if vus := this.Req().FormValue("_once"); len(vus) > 0 {
 		value = vus
 	} else {
-		value = this.Ctx.Header().Get("X-Form-Once")
+		value = this.Ctx.Req().Header.Get("X-Form-Once")
 	}
 
 	// exist in session

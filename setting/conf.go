@@ -37,6 +37,8 @@ import (
 	"github.com/go-tango/social-auth/apps"
 	"github.com/macaron-contrib/cache"
 	"github.com/tango-contrib/captcha"
+
+	. "github.com/qiniu/api/conf"
 )
 
 const (
@@ -182,6 +184,7 @@ var (
 	DataSource string
 	MaxIdle    int
 	MaxOpen    int
+	DebugLog   bool
 )
 
 var (
@@ -249,6 +252,7 @@ func LoadConfig() *goconfig.ConfigFile {
 	DataSource = Cfg.MustValue("orm", "data_source", "root:@/wetalk?charset=utf8")
 	MaxIdle = Cfg.MustInt("orm", "max_idle_conn", 30)
 	MaxOpen = Cfg.MustInt("orm", "max_open_conn", 50)
+	DebugLog = Cfg.MustBool("orm", "debug_log", false)
 
 	//set logger
 	os.MkdirAll("./logs", os.ModePerm)
@@ -266,18 +270,6 @@ func LoadConfig() *goconfig.ConfigFile {
 	} else {
 		log.SetOutputLevel(log.Ldebug)
 	}
-
-	// set default database
-	/*err = orm.RegisterDataBase("default", DriverName, DataSource, MaxIdle, MaxOpen)
-	if err != nil {
-		log.Error(err)
-	}
-	orm.RunCommand()
-
-	err = orm.RunSyncdb("default", false, false)
-	if err != nil {
-		log.Error(err)
-	}*/
 
 	reloadConfig()
 
@@ -307,6 +299,10 @@ func LoadConfig() *goconfig.ConfigFile {
 	settingCompress()
 
 	configWatcher()
+
+	//Qiniu
+	ACCESS_KEY = QiniuAccessKey
+	SECRET_KEY = QiniuSecurityKey
 
 	return Cfg
 }

@@ -38,7 +38,7 @@ func (this *Login) Get() error {
 
 	loginRedirect := strings.TrimSpace(this.GetString("to"))
 	if loginRedirect == "" {
-		loginRedirect = this.Ctx.Header().Get("Referer")
+		loginRedirect = this.Ctx.Req().Header.Get("Referer")
 	}
 	if utils.IsMatchHost(loginRedirect) == false {
 		loginRedirect = "/"

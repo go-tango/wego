@@ -35,10 +35,10 @@ func (this *Show) loadPage(page *models.Page) bool {
 	return err != nil
 }
 
-func (this *Show) Get() {
+func (this *Show) Get() error {
 	page := models.Page{}
 	if this.loadPage(&page) {
-		return
+		return nil
 	}
-	this.Render("page/show.html", this.Data)
+	return this.Render("page/show.html", this.Data)
 }
