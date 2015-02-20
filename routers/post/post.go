@@ -454,11 +454,12 @@ func (this *NewPost) Get() error {
 	return this.Render("post/new.html", this.Data)
 }
 
-func (this *NewPost) Post() {
+func (this *NewPost) Post() error {
 	if this.CheckActiveRedirect() {
-		return
+		return nil
 	}
 
+	var err error
 	form := post.PostForm{Locale: this.Locale}
 	topicSlug := this.GetString("topic")
 	if len(topicSlug) > 0 {
@@ -493,18 +494,22 @@ func (this *NewPost) Post() {
 		}
 		this.Data["Category"] = &category
 	}
-	models.FindTopics(&form.Topics)
+	err = models.FindTopics(&form.Topics)
+	if err != nil {
+		return err
+	}
 	if !this.ValidFormSets(&form) {
-		return
+		this.Flash.Redirect("/new")
+		return nil
 	}
 
 	var post models.Post
 	if err := form.SavePost(&post, &this.User); err == nil {
 		this.JsStorage("deleteKey", "post/new")
 		this.Redirect(post.Link())
-		return
+		return nil
 	}
-	this.Render("post/new.html", this.Data)
+	return this.Render("post/new.html", this.Data)
 }
 
 // Post Router

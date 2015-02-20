@@ -147,7 +147,6 @@ func (this *BaseRouter) LoginUser(user *models.User, remember bool) string {
 		auth.SetCookie(this, "login_to", "", -1, "/")
 	}
 
-	fmt.Println("sessin:", this.Session.Id(), this.Session.IsValid())
 	// login user
 	auth.LoginUser(user, this.Context, this.Session.Session, remember)
 
@@ -172,6 +171,7 @@ func (this *BaseRouter) CheckActiveRedirect(args ...interface{}) bool {
 			code = v
 		}
 	}
+
 	if needActive {
 		// check login
 		if this.CheckLoginRedirect() {
@@ -194,7 +194,6 @@ func (this *BaseRouter) CheckActiveRedirect(args ...interface{}) bool {
 		}
 	}
 	return false
-
 }
 
 // check if not login then redirect
@@ -445,11 +444,11 @@ func (this *BaseRouter) SetFormError(form interface{}, fieldName, errMsg string,
 }
 
 func (this *BaseRouter) IsAjax() bool {
-	return this.Ctx.Header().Get("X-Requested-With") == "XMLHttpRequest"
+	return this.Req().Header.Get("X-Requested-With") == "XMLHttpRequest"
 }
 
 func (this *BaseRouter) SetPaginator(per int, nums int64) *utils.Paginator {
-	p := utils.NewPaginator(this.Ctx.Req(), per, nums)
+	p := utils.NewPaginator(this.Req(), per, nums)
 	this.Data["paginator"] = p
 	return p
 }

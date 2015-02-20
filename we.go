@@ -53,14 +53,24 @@ func initialize() {
 	SECRET_KEY = setting.QiniuSecurityKey
 }
 
-func initTango() *tango.Tango {
+func initTango(isprod bool) *tango.Tango {
 	middlewares.Init()
 
 	tg := tango.NewWithLog(setting.Log)
-	tg.Use(debug.Debug(debug.Options{
-		IgnorePrefix:     "/static",
-		HideResponseBody: true,
-	}))
+	if isprod {
+		tg.Mode = tango.Prod
+	} else {
+		tg.Mode = tango.Dev
+	}
+
+	if !isprod {
+		tg.Use(debug.Debug(debug.Options{
+			IgnorePrefix:     "/static",
+			HideResponseBody: false,
+			HideRequestBody:  false,
+		}))
+	}
+
 	tg.Use(tango.ClassicHandlers...)
 
 	tg.Use(
@@ -84,22 +94,19 @@ func initTango() *tango.Tango {
 }
 
 func main() {
+	// init config
 	initialize()
-
-	t := initTango()
-
-	if setting.IsProMode {
-		t.Mode = tango.Prod
-	} else {
-		t.Mode = tango.Dev
-	}
-	setting.Log.Info("start WeGo version", setting.APP_VER, setting.AppUrl)
 
 	// init models
 	models.Init(setting.IsProMode)
 
-	//initialize the routers
+	// init tango
+	t := initTango(setting.IsProMode)
+
+	// initialize the routers
 	routers.Init(t)
 
+	// run
+	setting.Log.Info("start WeGo", "v"+setting.APP_VER, setting.AppUrl)
 	t.Run(setting.AppHost)
 }
