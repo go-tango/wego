@@ -53,7 +53,7 @@ func (this *BulletinAdminNew) Post() {
 
 	var bulletin models.Bulletin
 	form.SetToBulletin(&bulletin)
-	if err := models.InsertBulletin(&bulletin); err == nil {
+	if err := models.Insert(&bulletin); err == nil {
 		this.FlashRedirect(fmt.Sprintf("/admin/bulletin/%d", bulletin.Id), 302, "CreateSuccess")
 		return
 	} else {
@@ -109,7 +109,7 @@ func (this *BulletinAdminDelete) Post() {
 	cnt, _ := models.Count(&models.Bulletin{Id: this.object.Id})
 	if cnt > 0 {
 		// delete object
-		if err := models.DeleteBulletinById(this.object.Id); err == nil {
+		if err := models.DeleteById(this.object.Id, new(models.Bulletin)); err == nil {
 			this.FlashRedirect("/admin/bulletin", 302, "DeleteSuccess")
 			return
 		} else {

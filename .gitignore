@@ -9,6 +9,7 @@ _test
 bale/
 logs/
 wego
+wego_amd64
 
 # Architecture specific extensions/prefixes
 *.[568vq]

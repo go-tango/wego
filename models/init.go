@@ -35,7 +35,7 @@ func Init(isProMode bool) {
 
 	err = orm.Sync2(new(Setting), new(Category), new(Post), new(Image),
 		new(User), new(FavoritePost), new(Follow), new(Topic), new(FollowTopic),
-		new(Page), new(Notification), new(Comment))
+		new(Page), new(Notification), new(Comment), new(Bulletin))
 	if err != nil {
 		panic(err)
 	}

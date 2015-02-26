@@ -17,13 +17,3 @@ func FindBulletins() ([]Bulletin, error) {
 	err := orm.Asc("created").Find(&bulletins)
 	return bulletins, err
 }
-
-func InsertBulletin(bulletin *Bulletin) error {
-	_, err := orm.Insert(bulletin)
-	return err
-}
-
-func DeleteBulletinById(id int64) error {
-	_, err := orm.Id(id).Delete(new(Bulletin))
-	return err
-}
