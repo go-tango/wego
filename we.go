@@ -64,7 +64,9 @@ func initTango(isprod bool) *tango.Tango {
 			RootPath: "./static_source",
 			Prefix:   "static_source",
 		}),
-		session.New(time.Duration(setting.SessionCookieLifeTime)),
+		session.New(session.Options{
+			MaxAge: time.Duration(setting.SessionCookieLifeTime),
+		}),
 		middlewares.Renders,
 		setting.Captcha,
 	)

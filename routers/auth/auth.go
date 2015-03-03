@@ -129,12 +129,12 @@ type Logout struct {
 
 // Logout implemented user logout page.
 func (this *Logout) Get() {
-	auth.LogoutUser(this.Context, this.Session.Session)
+	auth.LogoutUser(this.Context, &this.Session)
 
 	// write flash message
-	//this.FlashWrite("HasLogout", "true")
+	this.FlashWrite("HasLogout", "true")
 
-	this.Redirect("/login")
+	this.Flash.Redirect("/login")
 }
 
 // RegisterRouter serves register page.
@@ -317,7 +317,7 @@ func (this *ResetRouter) Post() {
 		}
 
 		if this.IsLogin {
-			auth.LogoutUser(this.Context, this.Session.Session)
+			auth.LogoutUser(this.Context, &this.Session)
 			return
 		}
 

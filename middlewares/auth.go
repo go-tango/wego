@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"github.com/go-xorm/dbweb/models"
-	"github.com/go-xweb/httpsession"
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/session"
 )
@@ -14,19 +13,19 @@ var (
 type auther interface {
 	AskAuth() bool
 	SetUserId(int64)
-	SetSession(*httpsession.Session)
+	SetSession(*session.Session)
 }
 
 type Auther struct {
 	id int64
-	s  *httpsession.Session
+	s  *session.Session
 }
 
 func (Auther) AskAuth() bool {
 	return true
 }
 
-func (a *Auther) SetSession(s *httpsession.Session) {
+func (a *Auther) SetSession(s *session.Session) {
 	a.s = s
 }
 

@@ -40,7 +40,7 @@ func (this *BaseAdminRouter) Before() {
 
 	// if user isn't admin, then logout user
 	if !this.User.IsAdmin {
-		auth.LogoutUser(this.Context, this.Session.Session)
+		auth.LogoutUser(this.Context, &this.Session)
 		// write flash message, use .flash.NotPermit
 		this.FlashWrite("NotPermit", "true")
 		this.Redirect("/login", 302)

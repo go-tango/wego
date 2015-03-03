@@ -77,10 +77,10 @@ func (this *BaseRouter) Before() {
 
 	switch {
 	// save logined user if exist in session
-	case auth.GetUserFromSession(&this.User, this.Session.Session):
+	case auth.GetUserFromSession(&this.User, &this.Session):
 		this.IsLogin = true
 	// save logined user if exist in remember cookie
-	case auth.LoginUserFromRememberCookie(&this.User, this.Ctx.Context, this.Session.Session):
+	case auth.LoginUserFromRememberCookie(&this.User, this.Ctx.Context, &this.Session):
 		this.IsLogin = true
 	}
 
@@ -91,7 +91,7 @@ func (this *BaseRouter) Before() {
 
 		// if user forbided then do logout
 		if this.User.IsForbid {
-			auth.LogoutUser(this.Context, this.Session.Session)
+			auth.LogoutUser(this.Context, &this.Session)
 			this.FlashRedirect("/login", 302, "UserForbid")
 			return
 		}
@@ -148,7 +148,7 @@ func (this *BaseRouter) LoginUser(user *models.User, remember bool) string {
 	}
 
 	// login user
-	auth.LoginUser(user, this.Context, this.Session.Session, remember)
+	auth.LoginUser(user, this.Context, &this.Session, remember)
 
 	this.setLangCookie(i18n.GetLangByIndex(user.Lang))
 

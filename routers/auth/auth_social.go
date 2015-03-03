@@ -16,7 +16,6 @@ package auth
 
 import (
 	"github.com/go-tango/social-auth"
-	"github.com/go-xweb/httpsession"
 	"github.com/lunny/log"
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/session"
@@ -32,14 +31,14 @@ import (
 type socialAuther struct {
 }
 
-func (p *socialAuther) IsUserLogin(ctx *tango.Context, session *httpsession.Session) (int, bool) {
+func (p *socialAuther) IsUserLogin(ctx *tango.Context, session *session.Session) (int, bool) {
 	if id := auth.GetUserIdFromSession(session); id > 0 {
 		return int(id), true
 	}
 	return 0, false
 }
 
-func (p *socialAuther) LoginUser(ctx *tango.Context, session *httpsession.Session, uid int) (string, error) {
+func (p *socialAuther) LoginUser(ctx *tango.Context, session *session.Session, uid int) (string, error) {
 	user := models.User{}
 	if err := models.GetById(int64(uid), &user); err == nil {
 		auth.LoginUser(&user, ctx, session, true)
@@ -55,7 +54,7 @@ type OAuthRedirect struct {
 }
 
 func (o *OAuthRedirect) Get() {
-	redirect, err := setting.SocialAuth.OAuthRedirect(o.Context, o.Session.Session)
+	redirect, err := setting.SocialAuth.OAuthRedirect(o.Context, &o.Session)
 	if err != nil {
 		log.Error("OAuthRedirect", err)
 	}
@@ -71,7 +70,7 @@ type OAuthAccess struct {
 }
 
 func (o *OAuthAccess) Get() {
-	redirect, _, err := setting.SocialAuth.OAuthAccess(o.Context, o.Session.Session)
+	redirect, _, err := setting.SocialAuth.OAuthAccess(o.Context, &o.Session)
 	if err != nil {
 		log.Error("OAuthAccess", err)
 	}
@@ -86,7 +85,7 @@ type SocialAuthRouter struct {
 }
 
 func (this *SocialAuthRouter) canConnect(socialType *social.SocialType) bool {
-	if st, ok := setting.SocialAuth.ReadyConnect(this.Context, this.Session.Session); !ok {
+	if st, ok := setting.SocialAuth.ReadyConnect(this.Context, &this.Session); !ok {
 		return false
 	} else {
 		*socialType = st
@@ -189,7 +188,7 @@ failed:
 	return
 
 connect:
-	if loginRedirect, _, err := setting.SocialAuth.ConnectAndLogin(this.Context, this.Session.Session, socialType, int(user.Id)); err != nil {
+	if loginRedirect, _, err := setting.SocialAuth.ConnectAndLogin(this.Context, &this.Session, socialType, int(user.Id)); err != nil {
 		log.Error("ConnectAndLogin:", err)
 		goto failed
 	} else {

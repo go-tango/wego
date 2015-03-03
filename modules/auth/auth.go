@@ -26,9 +26,9 @@ import (
 	"strings"
 
 	"github.com/Unknwon/i18n"
-	"github.com/go-xweb/httpsession"
 	"github.com/lunny/log"
 	"github.com/lunny/tango"
+	"github.com/tango-contrib/session"
 
 	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
@@ -122,7 +122,7 @@ func GetLoginRedirect(ctx *tango.Context) string {
 }
 
 // login user
-func LoginUser(user *models.User, ctx *tango.Context, session *httpsession.Session, remember bool) {
+func LoginUser(user *models.User, ctx *tango.Context, session *session.Session, remember bool) {
 	// werid way of beego session regenerate id...
 	//session.SessionRelease(ctx.ResponseWriter)
 	//session = beego.GlobalSessions.SessionRegenerateId(ctx.ResponseWriter, ctx.Req())
@@ -147,7 +147,7 @@ func DeleteRememberCookie(ctx *tango.Context) {
 	SetCookie(ctx, setting.CookieRememberName, "", -1)
 }
 
-func LoginUserFromRememberCookie(user *models.User, ctx *tango.Context, session *httpsession.Session) (success bool) {
+func LoginUserFromRememberCookie(user *models.User, ctx *tango.Context, session *session.Session) (success bool) {
 	userName := GetCookie(ctx.Req(), setting.CookieUserName)
 	if len(userName) == 0 {
 		return false
@@ -176,12 +176,12 @@ func LoginUserFromRememberCookie(user *models.User, ctx *tango.Context, session 
 }
 
 // logout user
-func LogoutUser(ctx *tango.Context, sess *httpsession.Session) {
+func LogoutUser(ctx *tango.Context, sess *session.Session) {
 	DeleteRememberCookie(ctx)
 	sess.Del("auth_user_id")
 }
 
-func GetUserIdFromSession(sess *httpsession.Session) int64 {
+func GetUserIdFromSession(sess *session.Session) int64 {
 	if id, ok := sess.Get("auth_user_id").(int64); ok {
 		return id
 	}
@@ -189,7 +189,7 @@ func GetUserIdFromSession(sess *httpsession.Session) int64 {
 }
 
 // get user if key exist in session
-func GetUserFromSession(user *models.User, sess *httpsession.Session) bool {
+func GetUserFromSession(user *models.User, sess *session.Session) bool {
 	id := GetUserIdFromSession(sess)
 	if id > 0 {
 		if u, err := models.GetUserById(int64(id)); err == nil {
