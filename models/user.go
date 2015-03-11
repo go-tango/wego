@@ -119,11 +119,6 @@ func GetUserByName(username string) (*User, error) {
 	return &user, nil
 }
 
-func UpdateUser(user *User, cols ...string) error {
-	_, err := orm.Cols(cols...).Update(user)
-	return err
-}
-
 // user follow
 type Follow struct {
 	Id           int64

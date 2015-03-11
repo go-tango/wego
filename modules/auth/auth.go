@@ -101,13 +101,13 @@ func RegisterUser(user *models.User, username, email, password string, locale i1
 func SaveNewPassword(user *models.User, password string) error {
 	salt := models.GetUserSalt()
 	user.Password = fmt.Sprintf("%s$%s", salt, utils.EncodePassword(password, salt))
-	return models.UpdateUser(user, "password", "rands", "updated")
+	return models.UpdateById(user.Id, user, "password", "rands", "updated")
 }
 
 //set a new avatar type to user
 func SaveAvatarType(user *models.User, avatarType int) error {
 	user.AvatarType = avatarType
-	return models.UpdateUser(user, "avatar_type", "updated")
+	return models.UpdateById(user.Id, user, "avatar_type", "updated")
 }
 
 // get login redirect url from cookie
@@ -383,7 +383,7 @@ func UploadUserAvatarToQiniu(r io.ReadSeeker, filename string, mime string, buck
 
 	//update user
 	user.AvatarKey = putRet.Key
-	if err := models.UpdateUser(user, "avatar_key", "updated"); err != nil {
+	if err := models.UpdateById(user.Id, user, "avatar_key", "updated"); err != nil {
 		return err
 	}
 	return nil

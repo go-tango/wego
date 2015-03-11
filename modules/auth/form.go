@@ -197,7 +197,7 @@ func (form *ProfileForm) SaveUserProfile(user *models.User) error {
 		}
 
 		utils.SetFormValues(form, user)
-		return models.UpdateUser(user, changes...)
+		return models.UpdateById(user.Id, user, changes...)
 	}
 	return nil
 }
