@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-tango/wego/setting"
@@ -20,6 +21,10 @@ type Notification struct {
 	ContentCache string    `xorm:"text"`
 	Status       int       `xorm:"index"`
 	Created      time.Time `xorm:"created index"`
+}
+
+func (n *Notification) Link() string {
+	return fmt.Sprintf("%notification", setting.AppUrl)
 }
 
 func (n *Notification) FromUser() *User {
