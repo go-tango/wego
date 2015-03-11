@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-tango/wego/modules/utils"
 	"github.com/go-tango/wego/setting"
 )
 
@@ -23,8 +24,20 @@ type Notification struct {
 	Created      time.Time `xorm:"created index"`
 }
 
-func (n *Notification) Link() string {
-	return fmt.Sprintf("%notification", setting.AppUrl)
+func (m *Notification) String() string {
+	return utils.ToStr(m.Id)
+}
+
+func (m *Notification) Link() string {
+	return fmt.Sprintf("%s%s#reply%d", setting.AppUrl, m.Uri, m.Floor)
+}
+
+func (m *Notification) GetContentCache() string {
+	if setting.RealtimeRenderMD {
+		return utils.RenderMarkdown(m.Content)
+	} else {
+		return m.ContentCache
+	}
 }
 
 func (n *Notification) FromUser() *User {
