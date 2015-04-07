@@ -499,7 +499,7 @@ func (this *NewPost) Post() error {
 		return err
 	}
 	if !this.ValidFormSets(&form) {
-		this.Flash.Redirect("/new")
+		this.Redirect("/new")
 		return nil
 	}
 

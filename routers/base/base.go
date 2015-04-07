@@ -303,7 +303,7 @@ func (this *BaseRouter) FlashRedirect(uri string, code int, flag string, args ..
 	this.Session.Set("on_redirect", params)
 
 	this.FlashWrite(flag, flagVal)
-	this.Flash.Redirect(uri)
+	this.Redirect(uri)
 }
 
 func (this *BaseRouter) FlashWrite(key, value string) {

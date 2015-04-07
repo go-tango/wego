@@ -55,6 +55,9 @@ func initTango(isprod bool) *tango.Tango {
 
 	tg.Use(tango.ClassicHandlers...)
 
+	sess := session.New(session.Options{
+			MaxAge: time.Duration(setting.SessionCookieLifeTime),
+		})
 	tg.Use(
 		tango.Static(tango.StaticOptions{
 			RootPath: "./static",
@@ -64,9 +67,7 @@ func initTango(isprod bool) *tango.Tango {
 			RootPath: "./static_source",
 			Prefix:   "static_source",
 		}),
-		session.New(session.Options{
-			MaxAge: time.Duration(setting.SessionCookieLifeTime),
-		}),
+		sess,
 		middlewares.Renders,
 		setting.Captcha,
 	)
@@ -76,7 +77,7 @@ func initTango(isprod bool) *tango.Tango {
 	if setting.EnableXSRF {
 		tg.Use(xsrf.New(time.Duration(setting.SessionCookieLifeTime)))
 	}
-	tg.Use(flash.Flashes(), events.Events())
+	tg.Use(flash.Flashes(sess), events.Events())
 	return tg
 }
 

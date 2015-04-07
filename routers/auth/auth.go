@@ -134,7 +134,7 @@ func (this *Logout) Get() {
 	// write flash message
 	this.FlashWrite("HasLogout", "true")
 
-	this.Flash.Redirect("/login")
+	this.Redirect("/login")
 }
 
 // RegisterRouter serves register page.
