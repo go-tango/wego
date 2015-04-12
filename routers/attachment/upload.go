@@ -16,7 +16,6 @@ package attachment
 
 import (
 	"net/http"
-	"path"
 	"strings"
 	"time"
 
@@ -75,7 +74,7 @@ func (this *UploadRouter) Post() {
 }
 
 func Image(ctx *tango.Context) {
-	token := path.Base(ctx.Req().RequestURI)
+	token := ctx.Params().Get(":path")
 
 	// split token and file ext
 	var filePath string

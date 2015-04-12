@@ -55,11 +55,13 @@ func (form *TopicAdminForm) Labels() map[string]string {
 }
 
 func (form *TopicAdminForm) Valid(v *validation.Validation) {
-	if models.IsExist(&models.Topic{Name: form.Name, Id: int64(form.Id)}) {
+	topic := models.Topic{Name: form.Name}
+	if models.GetByExample(&topic); topic.Id != int64(form.Id) {
 		v.SetError("Name", "admin.field_need_unique")
 	}
 
-	if models.IsExist(&models.Topic{Slug: form.Slug, Id: int64(form.Id)}) {
+	topic = models.Topic{Slug: form.Slug}
+	if models.GetByExample(&topic); topic.Id != int64(form.Id) {
 		v.SetError("Slug", "admin.field_need_unique")
 	}
 }
@@ -91,11 +93,13 @@ func (form *CategoryAdminForm) Labels() map[string]string {
 }
 
 func (form *CategoryAdminForm) Valid(v *validation.Validation) {
-	if models.IsExist(&models.Category{Name: form.Name, Id: int64(form.Id)}) {
+	category := models.Category{Name: form.Name}
+	if models.GetByExample(&category); category.Id != int64(form.Id) {
 		v.SetError("Name", "admin.field_need_unique")
 	}
 
-	if models.IsExist(&models.Category{Slug: form.Slug, Id: int64(form.Id)}) {
+	category = models.Category{Slug: form.Slug}
+	if models.GetByExample(&category); category.Id != int64(form.Id) {
 		v.SetError("Slug", "admin.field_need_unique")
 	}
 }

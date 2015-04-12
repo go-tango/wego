@@ -17,7 +17,6 @@ package attachment
 import (
 	"io/ioutil"
 	"net/http"
-	"path"
 	"strings"
 	"time"
 
@@ -77,7 +76,7 @@ func (this *QiniuUploadRouter) Post() {
 }
 
 func QiniuImage(ctx *tango.Context) {
-	var imageName = path.Base(ctx.Req().RequestURI)
+	var imageName = ctx.Params().Get(":path")
 	var imageKey string
 	var imageSize string
 	if i := strings.IndexRune(imageName, '.'); i == -1 {

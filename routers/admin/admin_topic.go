@@ -94,10 +94,11 @@ func (this *TopicAdminEdit) Get() {
 // view for update object
 func (this *TopicAdminEdit) Post() {
 	form := post.TopicAdminForm{Id: int(this.object.Id)}
+	fmt.Println("1111111")
 	if this.ValidFormSets(&form) == false {
+		fmt.Println("3333333")
 		return
 	}
-
 	// get changed field names
 	changes := utils.FormChanges(&this.object, &form)
 

@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	APP_VER = "0.1.20150220"
+	APP_VER = "0.1.20150412"
 )
 
 var (

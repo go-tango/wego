@@ -32,20 +32,19 @@ import (
 func Init(t *tango.Tango) {
 	/* imgs */
 	if setting.QiniuServiceEnabled {
-		t.Get("/img/(.*)", attachment.QiniuImage)
+		t.Get("/img/*path", attachment.QiniuImage)
 	} else {
-		t.Get("/img/(.*)", attachment.Image)
+		t.Get("/img/*path", attachment.Image)
 	}
 
 	// oauth support
-	t.Get("/login/(.*)/access", new(auth.OAuthAccess))
-	t.Get("/login/(.*)", new(auth.OAuthRedirect))
+	t.Get("/login/*auth/access", new(auth.OAuthAccess))
+	t.Get("/login/*auth", new(auth.OAuthRedirect))
 
 	/* Common Routers */
 	t.Get("/", new(post.Home))
 	t.Any("/topic/:slug", new(post.Topic))
 
-	t.Get("/:sortSlug", new(post.Navs))
 	t.Get("/category/:slug", new(post.Category))
 	t.Get("/category/:catSlug/:sortSlug", new(post.CateNavs))
 
@@ -158,7 +157,8 @@ func Init(t *tango.Tango) {
 		})
 	})
 
-	t.Get("/:slug", new(page.Show))
+	t.Get("/:sortSlug", new(post.Navs))
+	t.Get("/page/:slug", new(page.Show))
 
 	// /* Robot routers for "robot.txt" */
 	t.Get("/robot.txt", new(base.RobotRouter))

@@ -369,9 +369,10 @@ func (this *BaseRouter) FormOnceCreate(args ...bool) {
 }
 
 func (this *BaseRouter) validForm(form interface{}, names ...string) (bool, map[string]*validation.ValidationError) {
+	fmt.Println("777")
 	// parse request params to form ptr struct
 	utils.ParseForm(form, this.Ctx.Req().Form)
-
+	fmt.Println("888")
 	// Put data back in case users input invalid data for any section.
 	name := reflect.ValueOf(form).Elem().Type().Name()
 	if len(names) > 0 {
@@ -383,12 +384,15 @@ func (this *BaseRouter) validForm(form interface{}, names ...string) (bool, map[
 
 	// check form once
 	if this.FormOnceNotMatch() {
+		fmt.Println("999")
 		return false, nil
 	}
+	fmt.Println("101010")
 
 	// Verify basic input.
 	valid := validation.Validation{}
 	if ok, _ := valid.Valid(form); !ok {
+		fmt.Println("111111")
 		errs := valid.ErrorMap()
 		this.Data[errName] = &valid
 		return false, errs
@@ -404,8 +408,11 @@ func (this *BaseRouter) ValidForm(form interface{}, names ...string) bool {
 
 // valid form and put errors to tempalte context
 func (this *BaseRouter) ValidFormSets(form interface{}, names ...string) bool {
+	fmt.Println("4444")
 	valid, errs := this.validForm(form, names...)
+	fmt.Println("5555")
 	this.setFormSets(form, errs, names...)
+	fmt.Println("6666")
 	return valid
 }
 
