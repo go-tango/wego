@@ -39,11 +39,6 @@ func initTango(isprod bool) *tango.Tango {
 	middlewares.Init()
 
 	tg := tango.NewWithLog(setting.Log)
-	if isprod {
-		tg.Mode = tango.Prod
-	} else {
-		tg.Mode = tango.Dev
-	}
 
 	if !isprod {
 		tg.Use(debug.Debug(debug.Options{
@@ -56,8 +51,8 @@ func initTango(isprod bool) *tango.Tango {
 	tg.Use(tango.ClassicHandlers...)
 
 	sess := session.New(session.Options{
-			MaxAge: time.Duration(setting.SessionCookieLifeTime),
-		})
+		MaxAge: time.Duration(setting.SessionCookieLifeTime),
+	})
 	tg.Use(
 		tango.Static(tango.StaticOptions{
 			RootPath: "./static",
