@@ -41,7 +41,8 @@ func initTango(isprod bool) *tango.Tango {
 
 	tg := tango.NewWithLog(setting.Log)
 
-	if !isprod {
+	if false {
+		//if !isprod {
 		tg.Use(debug.Debug(debug.Options{
 			IgnorePrefix:     "/static",
 			HideResponseBody: true,
@@ -81,14 +82,16 @@ func main() {
 	// init configs
 	setting.LoadConfig()
 
+	// init models
+	models.Init(setting.IsProMode)
+
+	// init social
+	social.SetORM(models.ORM())
 	setting.SocialAuth = social.NewSocial("/login/", auth.SocialAuther)
 	setting.SocialAuth.ConnectSuccessURL = "/settings/profile"
 	setting.SocialAuth.ConnectFailedURL = "/settings/profile"
 	setting.SocialAuth.ConnectRegisterURL = "/register/connect"
 	setting.SocialAuth.LoginURL = "/login"
-
-	// init models
-	models.Init(setting.IsProMode)
 
 	// init tango
 	t := initTango(setting.IsProMode)

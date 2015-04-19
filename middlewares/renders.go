@@ -16,6 +16,15 @@ func Init() {
 	Renders = renders.New(renders.Options{
 		Directory: setting.TemplatesPath,
 		Funcs:     mergeFuncMap(utils.FuncMap(), setting.Funcs),
+		Vars: renders.T{
+			"AppName":       setting.AppName,
+			"AppVer":        setting.AppVer,
+			"AppUrl":        setting.AppUrl,
+			"AppLogo":       setting.AppLogo,
+			"AvatarURL":     setting.AvatarURL,
+			"IsProMode":     setting.IsProMode,
+			"SearchEnabled": setting.SearchEnabled,
+		},
 	})
 }
 

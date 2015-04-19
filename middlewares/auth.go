@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"github.com/go-xorm/dbweb/models"
+	"github.com/go-tango/wego/models"
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/session"
 )

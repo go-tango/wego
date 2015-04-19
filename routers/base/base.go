@@ -98,13 +98,6 @@ func (this *BaseRouter) Before() {
 	}
 
 	// Setting properties.
-	this.Data["AppName"] = setting.AppName
-	this.Data["AppVer"] = setting.AppVer
-	this.Data["AppUrl"] = setting.AppUrl
-	this.Data["AppLogo"] = setting.AppLogo
-	this.Data["AvatarURL"] = setting.AvatarURL
-	this.Data["IsProMode"] = setting.IsProMode
-	this.Data["SearchEnabled"] = setting.SearchEnabled
 	this.Data["Flush"] = this.Flash.Data()
 
 	// Redirect to make URL clean.
@@ -124,14 +117,14 @@ func (this *BaseRouter) Before() {
 	}
 
 	// if method is GET then auto create a form once token
-	if this.Ctx.Req().Method == "GET" {
+	if this.Req().Method == "GET" {
 		this.FormOnceCreate()
 	}
 }
 
 // on router finished
 func (this *BaseRouter) After() {
-	if !this.Ctx.Written() && this.TplNames != "" {
+	if !this.Written() && this.TplNames != "" {
 		err := this.Render(this.TplNames, this.Data)
 		if err != nil {
 			this.Result = err
@@ -140,8 +133,12 @@ func (this *BaseRouter) After() {
 }
 
 func (this *BaseRouter) LoginUser(user *models.User, remember bool) string {
-	loginRedirect := strings.TrimSpace(auth.GetCookie(this.Req(), "login_to"))
-	if utils.IsMatchHost(loginRedirect) == false {
+	ck := this.Cookies().Get("login_to")
+	var loginRedirect string
+	if ck != nil {
+		loginRedirect = strings.TrimSpace(ck.Value)
+	}
+	if !utils.IsMatchHost(loginRedirect) {
 		loginRedirect = "/"
 	} else {
 		auth.SetCookie(this, "login_to", "", -1, "/")
@@ -369,10 +366,8 @@ func (this *BaseRouter) FormOnceCreate(args ...bool) {
 }
 
 func (this *BaseRouter) validForm(form interface{}, names ...string) (bool, map[string]*validation.ValidationError) {
-	fmt.Println("777")
 	// parse request params to form ptr struct
 	utils.ParseForm(form, this.Ctx.Req().Form)
-	fmt.Println("888")
 	// Put data back in case users input invalid data for any section.
 	name := reflect.ValueOf(form).Elem().Type().Name()
 	if len(names) > 0 {
@@ -384,15 +379,12 @@ func (this *BaseRouter) validForm(form interface{}, names ...string) (bool, map[
 
 	// check form once
 	if this.FormOnceNotMatch() {
-		fmt.Println("999")
 		return false, nil
 	}
-	fmt.Println("101010")
 
 	// Verify basic input.
 	valid := validation.Validation{}
 	if ok, _ := valid.Valid(form); !ok {
-		fmt.Println("111111")
 		errs := valid.ErrorMap()
 		this.Data[errName] = &valid
 		return false, errs
@@ -408,11 +400,8 @@ func (this *BaseRouter) ValidForm(form interface{}, names ...string) bool {
 
 // valid form and put errors to tempalte context
 func (this *BaseRouter) ValidFormSets(form interface{}, names ...string) bool {
-	fmt.Println("4444")
 	valid, errs := this.validForm(form, names...)
-	fmt.Println("5555")
 	this.setFormSets(form, errs, names...)
-	fmt.Println("6666")
 	return valid
 }
 
