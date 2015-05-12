@@ -34,9 +34,9 @@ func SendRegisterMail(renders *renders.Renders, locale i18n.Locale, user *models
 	data := mailer.GetMailTmplData(locale.Lang, user)
 	data["Code"] = code
 
-	body, _ := renders.RenderString("mail/auth/register_success.html", data)
+	body, _ := renders.RenderBytes("mail/auth/register_success.html", data)
 
-	msg := mailer.NewMailMessage([]string{user.Email}, subject, body)
+	msg := mailer.NewMailMessage([]string{user.Email}, subject, string(body))
 	msg.Info = fmt.Sprintf("UID: %d, send register mail", user.Id)
 
 	// async send mail
