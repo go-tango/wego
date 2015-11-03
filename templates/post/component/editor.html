@@ -29,6 +29,7 @@
 {{str2html `<script type="text/template" rel="image-popover-content">`}}
     <div class="md-image">
         <form class="md-image-form" style="display:none;" action="{{$.root.AppUrl}}upload" data-dismiss="upload" enctype="multipart/form-data" method="POST">
+        {{.XSRF_HTML}}
             <div style="display:none" class="alert alert-danger alert-small" data-message="{{i18n $.root.Lang "editor.upload_failed"}}"></div>
             <div style="display:none" class="alert alert-success alert-small">{{i18n $.root.Lang "editor.upload_success"}}</div>
             <input type="hidden" name="type" value="image">

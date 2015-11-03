@@ -27,15 +27,13 @@ import (
 	"time"
 
 	"github.com/Unknwon/goconfig"
-	"github.com/howeyc/fsnotify"
-
-	"github.com/lunny/log"
-
 	"github.com/Unknwon/i18n"
 	"github.com/beego/compress"
 	"github.com/go-tango/social-auth"
 	"github.com/go-tango/social-auth/apps"
-	"github.com/macaron-contrib/cache"
+	"github.com/howeyc/fsnotify"
+	"github.com/lunny/log"
+	"github.com/tango-contrib/cache"
 	"github.com/tango-contrib/captcha"
 
 	. "github.com/qiniu/api/conf"
@@ -230,10 +228,12 @@ func LoadConfig() *goconfig.ConfigFile {
 	IsProMode = Cfg.MustValue("app", "run_mode") == "pro"
 
 	// cache system
-	Cache, err = cache.NewCacher("memory", cache.Options{
-		Interval: 360,
+	Captcha = captcha.New(captcha.Options{
+		Caches: cache.New(cache.Options{
+			Adapter:  "memory",
+			Interval: 360,
+		}),
 	})
-	Captcha = captcha.New(captcha.Options{}, Cache)
 	Captcha.FieldIdName = "CaptchaId"
 	Captcha.FieldCaptchaName = "Captcha"
 

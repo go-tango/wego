@@ -46,8 +46,9 @@
                 </div>
                 <div class="form-group">
                     <div class="markdown-editor"  data-preview-url="{{$.AppUrl}}api/md" data-savekey="post/new">
+                        {{$xsrf_html := .xsrf_html}}
                         {{with .PostFormSets.Fields.Content}}
-                            {{template "post/component/editor.html" dict "root" $ "Field" .Field "Error" .Error "Help" .Help}}
+                            {{template "post/component/editor.html" dict "root" $ "Field" .Field "Error" .Error "Help" .Help "XSRF_HTML" $xsrf_html}}
                         {{end}}
                     </div>
                 </div>
