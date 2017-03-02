@@ -4,27 +4,23 @@
 
 An open source forum system for Gopher community forked from WeTalk and rewritten via [tango](http://github.com/lunny/tango) & [xorm](http://xorm.io).
 
-### Usage
+## Installation
+
+### From source
 
 ```
-go get -u github.com/go-tango/wego
+go get github.com/go-tango/wego
 cd $GOPATH/src/github.com/go-tango/wego
+go build
 ```
-
-I suggest you [update all Dependencies](#dependencies)
 
 Copy `conf/global/app.ini` to `conf/app.ini` and edit it. All configure has comment in it.
 
 The files in `conf/` can overwrite `conf/global/` in runtime.
 
+run `./wego` and then open `http://localhost:9000` in your web browser.
 
-**Run WeGo**
-
-```
-bee run watchall
-```
-
-### Dependencies
+## Dependencies
 
 Contrib
 
@@ -38,31 +34,13 @@ Contrib
 * resize [https://github.com/nfnt/resize](https://github.com/nfnt/resize)
 * blackfriday [https://github.com/slene/blackfriday](https://github.com/slene/blackfriday)
 
-```
-go get -u github.com/lunny/tango
-cd $GOPATH/src/github.com/lunny/tango
-```
-
-Update all Dependencies
-
-```
-go get -u github.com/go-tango/social-auth
-go get -u github.com/beego/compress
-go get -u github.com/Unknwon/i18n
-go get -u github.com/go-sql-driver/mysql
-go get -u github.com/Unknwon/goconfig
-go get -u github.com/howeyc/fsnotify
-go get -u github.com/nfnt/resize
-go get -u github.com/slene/blackfriday
-```
-
-### Static Files
+## Static Files
 
 WeGo use `Google Closure Compile` and `Yui Compressor` compress js and css files.
 
 So you could need Java Runtime. Or close this feature in code by yourself.
 
-### Contact
+## Contact
 
 Maintain by [lunny](https://github.com/lunny)
 
