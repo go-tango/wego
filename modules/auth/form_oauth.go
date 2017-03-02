@@ -15,7 +15,7 @@
 package auth
 
 import (
-	"github.com/astaxie/beego/validation"
+	"github.com/go-xweb/xweb/validation"
 	"github.com/Unknwon/i18n"
 )
 

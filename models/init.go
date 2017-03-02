@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-tango/social-auth"
 	"github.com/go-tango/wego/setting"
+	"github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
 )
 
@@ -24,14 +25,13 @@ func Init(isProMode bool) {
 	orm.SetMaxIdleConns(setting.MaxIdle)
 	orm.SetMaxOpenConns(setting.MaxOpen)
 	if !isProMode {
-		orm.ShowSQL = true
+		orm.ShowSQL(true)
 	}
 	if setting.DebugLog {
-		orm.ShowDebug = true
-		orm.ShowWarn = true
+		orm.Logger().SetLevel(core.LOG_DEBUG)
+	} else {
+		orm.Logger().SetLevel(core.LOG_INFO)
 	}
-	orm.ShowErr = true
-	orm.ShowInfo = true
 
 	err = orm.Sync2(new(Setting), new(Category), new(Post), new(Image),
 		new(User), new(FavoritePost), new(Follow), new(Topic), new(FollowTopic),

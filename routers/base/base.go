@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/Unknwon/i18n"
-	"github.com/astaxie/beego/validation"
+	"github.com/go-xweb/xweb/validation"
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/flash"
 	"github.com/tango-contrib/renders"

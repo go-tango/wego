@@ -1,0 +1,247 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "ly9VLPE9GKo2U7mnbZyjb2LDQ3w=",
+			"path": "github.com/Unknwon/com",
+			"revision": "28b053d5a2923b87ce8c5a08f3af779894a72758",
+			"revisionTime": "2015-10-08T13:54:07Z"
+		},
+		{
+			"checksumSHA1": "9N7uiWjmfKEyVW5K4MQE+0KcIq4=",
+			"path": "github.com/Unknwon/goconfig",
+			"revision": "5cfc02f2789e6e98d8546e40b29d907aedc4c590",
+			"revisionTime": "2014-12-23T07:15:47Z"
+		},
+		{
+			"checksumSHA1": "gSAaJ38R4iqG2CEsZe/ftOs3V9w=",
+			"path": "github.com/Unknwon/i18n",
+			"revision": "39d6f2727e0698b1021ceb6a77c1801aa92e7d5d",
+			"revisionTime": "2016-06-03T08:28:25Z"
+		},
+		{
+			"checksumSHA1": "yA7/CydBcfWYt2P6eVS4l+wwr3g=",
+			"path": "github.com/astaxie/beego/httplib",
+			"revision": "b55e20ac60c5c2f4ec9612ec68a48cb94cfaab42",
+			"revisionTime": "2017-01-23T13:12:58Z"
+		},
+		{
+			"checksumSHA1": "95wt85GTZG0zi3Zk8g2jOVFV6Zg=",
+			"path": "github.com/astaxie/beego/utils",
+			"revision": "b55e20ac60c5c2f4ec9612ec68a48cb94cfaab42",
+			"revisionTime": "2017-01-23T13:12:58Z"
+		},
+		{
+			"checksumSHA1": "8ovR4qAc4x9AUYjLp3kDorSLe3c=",
+			"path": "github.com/beego/compress",
+			"revision": "fbacc486da675e9378ebff939792c54b4f91e40c",
+			"revisionTime": "2013-10-31T12:22:21Z"
+		},
+		{
+			"checksumSHA1": "OxLg4TJ82BBdkDhd/8Zprvf9W7I=",
+			"path": "github.com/coscms/tagfast",
+			"revision": "2b69b24962501b6f7e941b198c931251e378b6a4",
+			"revisionTime": "2015-09-25T14:42:50Z"
+		},
+		{
+			"checksumSHA1": "CB08Tc0ESV6lOqfBeVtJE7oVzZ8=",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "0e8690a9f2dd2751f86ab1036f1c5705beb0916a",
+			"revisionTime": "2013-03-24T15:51:38Z"
+		},
+		{
+			"checksumSHA1": "c1/GdnhlngeVkcx1i8BQfSbWguA=",
+			"path": "github.com/go-tango/social-auth",
+			"revision": "9cb94ef6b284e0fcb3d1e4c0295cf599f3bf05ca",
+			"revisionTime": "2015-04-19T08:39:09Z"
+		},
+		{
+			"checksumSHA1": "8pYQZ5+uYq3vxyWxItChRNi08lM=",
+			"path": "github.com/go-tango/social-auth/apps",
+			"revision": "9cb94ef6b284e0fcb3d1e4c0295cf599f3bf05ca",
+			"revisionTime": "2015-04-19T08:39:09Z"
+		},
+		{
+			"checksumSHA1": "HHB+Jna1wv0cXLxtCyOnQqFwvn4=",
+			"path": "github.com/go-xorm/builder",
+			"revision": "c6e604e9c7b7461715091e14ad0c242ec44c26e4",
+			"revisionTime": "2017-02-24T04:30:50Z"
+		},
+		{
+			"checksumSHA1": "OCcksAYN5m0kc5yJF/Ba4VVHqeA=",
+			"path": "github.com/go-xorm/core",
+			"revision": "7daacb215ed03af093a72e0af32a5fe79458613d",
+			"revisionTime": "2017-02-06T15:24:21Z"
+		},
+		{
+			"checksumSHA1": "meuYI0QnL9jFIzqdWW02EouC4vM=",
+			"path": "github.com/go-xorm/xorm",
+			"revision": "8045ca23c8a164abf078d83ee3540dd1c84548ba",
+			"revisionTime": "2017-03-01T13:11:00Z"
+		},
+		{
+			"checksumSHA1": "o/Xt3t+02GrxNX/C7WCB9hfA6qw=",
+			"path": "github.com/go-xweb/uuid",
+			"revision": "d7dce341f851128bb3fcc90b919c7138b675c16b",
+			"revisionTime": "2014-06-04T02:00:37Z"
+		},
+		{
+			"checksumSHA1": "cXsT9Cmv07KbOERAQZBAlN6agHQ=",
+			"path": "github.com/go-xweb/xweb/validation",
+			"revision": "47b23a206f7001a0983b4294922c8b0fd98c3851",
+			"revisionTime": "2014-12-09T01:55:25Z"
+		},
+		{
+			"checksumSHA1": "lQ4PUWdKDGHHK9hgwRv0USTHkBI=",
+			"path": "github.com/go-xweb/xweb/validation",
+			"revision": "b55e20ac60c5c2f4ec9612ec68a48cb94cfaab42",
+			"revisionTime": "2017-01-23T13:12:58Z"
+		},
+		{
+			"checksumSHA1": "gozvFGXXEwfOFeeGi3QHKjU6DDU=",
+			"path": "github.com/howeyc/fsnotify",
+			"revision": "13cd45d6f46a8c92566aac3919540024e6f25c75",
+			"revisionTime": "2014-06-17T11:54:36Z"
+		},
+		{
+			"checksumSHA1": "WErc+5f1Xj9OwPziVfoAs3oXO7g=",
+			"path": "github.com/lunny/log",
+			"revision": "7887c61bf0de75586961948b286be6f7d05d9f58",
+			"revisionTime": "2016-09-21T05:09:05Z"
+		},
+		{
+			"checksumSHA1": "LGQryvGobAgzTlwlUtYgMAcoKaY=",
+			"path": "github.com/lunny/tango",
+			"revision": "1bdd20c3cc9e42076faf5d01df4da4676c47e68c",
+			"revisionTime": "2016-12-14T09:36:05Z"
+		},
+		{
+			"checksumSHA1": "r5eQHkttko6kxroDEENXbmXKrSs=",
+			"path": "github.com/nfnt/resize",
+			"revision": "891127d8d1b52734debe1b3c3d7e747502b6c366",
+			"revisionTime": "2016-07-24T20:39:20Z"
+		},
+		{
+			"checksumSHA1": "uG/irJIgifYdc+HC1kF6Gwgn7kU=",
+			"path": "github.com/oxtoacart/bpool",
+			"revision": "4e1c5567d7c2dd59fa4c7c83d34c2f3528b025d6",
+			"revisionTime": "2015-07-12T13:31:11Z"
+		},
+		{
+			"checksumSHA1": "RxrYg+9OMvCfOM0IDpgogmLSF+c=",
+			"path": "github.com/qiniu/api/auth/digest",
+			"revision": "5ac1e2fe1d1afbb350e0647f053759ea7dbda57c",
+			"revisionTime": "2014-07-11T09:59:01Z"
+		},
+		{
+			"checksumSHA1": "KtoGWWg+eGKXViyd6GdVcUHDLPU=",
+			"path": "github.com/qiniu/api/conf",
+			"revision": "5ac1e2fe1d1afbb350e0647f053759ea7dbda57c",
+			"revisionTime": "2014-07-11T09:59:01Z"
+		},
+		{
+			"checksumSHA1": "0IhapzBKuvKp7W3Xhs9t0A3QG4Q=",
+			"path": "github.com/qiniu/api/fop",
+			"revision": "5ac1e2fe1d1afbb350e0647f053759ea7dbda57c",
+			"revisionTime": "2014-07-11T09:59:01Z"
+		},
+		{
+			"checksumSHA1": "AcZPlrYlmVgnkeOXEb/1L9GIljE=",
+			"path": "github.com/qiniu/api/io",
+			"revision": "5ac1e2fe1d1afbb350e0647f053759ea7dbda57c",
+			"revisionTime": "2014-07-11T09:59:01Z"
+		},
+		{
+			"checksumSHA1": "hd+HDBF+Fk/fCJtgjx/M36hNjBg=",
+			"path": "github.com/qiniu/api/rs",
+			"revision": "5ac1e2fe1d1afbb350e0647f053759ea7dbda57c",
+			"revisionTime": "2014-07-11T09:59:01Z"
+		},
+		{
+			"checksumSHA1": "98OE9R6L6dJ3KQBxswsfYSW2ezY=",
+			"path": "github.com/qiniu/api/url",
+			"revision": "5ac1e2fe1d1afbb350e0647f053759ea7dbda57c",
+			"revisionTime": "2014-07-11T09:59:01Z"
+		},
+		{
+			"checksumSHA1": "SFzIva/A+mfIbYlz/s11RCTRL2Y=",
+			"path": "github.com/qiniu/bytes",
+			"revision": "9acc46dc91fae3c20c09bb155050f1446d480c95",
+			"revisionTime": "2014-07-28T01:14:48Z"
+		},
+		{
+			"checksumSHA1": "93jwDrgbMtr9qUOeVLktFi9ExBM=",
+			"path": "github.com/qiniu/bytes/seekable",
+			"revision": "9acc46dc91fae3c20c09bb155050f1446d480c95",
+			"revisionTime": "2014-07-28T01:14:48Z"
+		},
+		{
+			"checksumSHA1": "5bLM9XOtoYFlVZP9VSg/nXFfoOU=",
+			"path": "github.com/qiniu/rpc",
+			"revision": "4d247572a7992e118c40d3dd68f7e0576f1d1c6c",
+			"revisionTime": "2014-07-28T01:21:42Z"
+		},
+		{
+			"checksumSHA1": "4tVBK2bULUlXJNHqdl25ZALwrjg=",
+			"path": "github.com/slene/blackfriday",
+			"revision": "fd3fc8f180b28dfd78d2508b61c86dc2b7f970cd",
+			"revisionTime": "2014-01-17T13:40:05Z"
+		},
+		{
+			"checksumSHA1": "I2LEpItRv0hMWCDOaiy/IrbaLXA=",
+			"path": "github.com/tango-contrib/cache",
+			"revision": "217d8ed48475b15478e8f68f0df49df0d167ad99",
+			"revisionTime": "2015-11-03T06:02:36Z"
+		},
+		{
+			"checksumSHA1": "KljW3LdiYCv0/Vb45b1sLFCF+9g=",
+			"path": "github.com/tango-contrib/captcha",
+			"revision": "dd4f9766d33b9faa4cc266ec1cc53e2c87c3bf00",
+			"revisionTime": "2016-09-21T13:14:54Z"
+		},
+		{
+			"checksumSHA1": "aYFVOWavsvPwRWusDC77CCO/OsM=",
+			"path": "github.com/tango-contrib/debug",
+			"revision": "5d27f97c00f5e284866bfeb0765b06de11e159b4",
+			"revisionTime": "2016-01-13T02:39:34Z"
+		},
+		{
+			"checksumSHA1": "6rVv1EJDQBkLFZpsjcJyCw+SGws=",
+			"path": "github.com/tango-contrib/events",
+			"revision": "983ddc3458adf8debfe57aaf4d89431d3e677842",
+			"revisionTime": "2015-04-28T07:46:54Z"
+		},
+		{
+			"checksumSHA1": "iBbeTbFWF4rGGwq6LiZpG3neRc0=",
+			"path": "github.com/tango-contrib/flash",
+			"revision": "c36a61fb6d97b9866248f5194b0b57d931e164ba",
+			"revisionTime": "2015-04-28T07:45:44Z"
+		},
+		{
+			"checksumSHA1": "NNxaOZpCmqrndteVVdpggGGqmaM=",
+			"path": "github.com/tango-contrib/renders",
+			"revision": "84e5c51bd9d883052f99bee07a975f271d29e278",
+			"revisionTime": "2016-08-25T01:39:36Z"
+		},
+		{
+			"checksumSHA1": "yLpHfme/X+dlBnQH8gQKQcVdp8w=",
+			"path": "github.com/tango-contrib/session",
+			"revision": "a88f488b64c246eda9fd85f4d449af204aab16ed",
+			"revisionTime": "2016-05-16T15:10:01Z"
+		},
+		{
+			"checksumSHA1": "w0wt9fkYYZ9D/IpmcxJHCjMM7Cw=",
+			"path": "github.com/tango-contrib/xsrf",
+			"revision": "6c70f61f0f54b4fb4762a7207f9a2b8aa4975d1a",
+			"revisionTime": "2015-07-07T06:45:12Z"
+		},
+		{
+			"checksumSHA1": "Nd6DRcLwZripAErJPfgW+Yf0Moc=",
+			"path": "gopkg.in/ini.v1",
+			"revision": "6f66b0e091edb3c7b380f7c4f0f884274d550b67",
+			"revisionTime": "2016-12-21T12:03:40Z"
+		}
+	],
+	"rootPath": "github.com/go-tango/wego"
+}

@@ -23,9 +23,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego/validation"
-
 	"github.com/go-tango/wego/setting"
+	"github.com/go-xweb/xweb/validation"
 )
 
 func init() {

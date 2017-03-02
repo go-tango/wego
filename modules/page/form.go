@@ -15,7 +15,7 @@
 package page
 
 import (
-	"github.com/astaxie/beego/validation"
+	"github.com/go-xweb/xweb/validation"
 
 	"github.com/go-tango/wego/models"
 	"github.com/go-tango/wego/modules/utils"
