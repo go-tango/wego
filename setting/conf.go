@@ -227,12 +227,15 @@ func LoadConfig() *goconfig.ConfigFile {
 
 	IsProMode = Cfg.MustValue("app", "run_mode") == "pro"
 
-	// cache system
-	Captcha = captcha.New(captcha.Options{
+	Cache = cache.Cache{
 		Caches: cache.New(cache.Options{
 			Adapter:  "memory",
 			Interval: 360,
 		}),
+	}
+	// cache system
+	Captcha = captcha.New(captcha.Options{
+		Caches: Cache.Caches,
 	})
 	Captcha.FieldIdName = "CaptchaId"
 	Captcha.FieldCaptchaName = "Captcha"
